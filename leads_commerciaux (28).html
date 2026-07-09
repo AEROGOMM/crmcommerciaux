@@ -1,0 +1,1683 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRM Leads Commerciaux — PRGO / LMPM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --graphite:#1F2933;
+    --graphite-2:#2C3844;
+    --concrete:#EDEAE3;
+    --concrete-2:#F7F5F0;
+    --paper:#FFFFFF;
+    --line:#DAD5C9;
+    --ink:#232323;
+    --ink-soft:#5B6570;
+    --prgo:#3B6E8F;
+    --prgo-soft:#E4EDF2;
+    --lmpm:#C6622A;
+    --lmpm-soft:#F5E6DB;
+    --amber:#E8A33D;
+    --moss:#4B7B4E;
+    --moss-soft:#E3EEE1;
+    --slate-red:#A64B4B;
+    --slate-red-soft:#F1E1E1;
+    --shadow: 0 1px 2px rgba(31,41,51,0.06), 0 4px 12px rgba(31,41,51,0.06);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--concrete);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.disp{
+    font-family:'Oswald',sans-serif;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+  }
+  .mono{font-family:'IBM Plex Mono',monospace;}
+
+  /* ===== HEADER ===== */
+  header{
+    background:var(--graphite);
+    color:#F2F0EA;
+    padding:18px 28px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:14px;
+    border-bottom:4px solid var(--amber);
+  }
+  header .brand{display:flex;align-items:center;gap:14px;}
+  header .brand .mark{
+    width:38px;height:38px;border-radius:3px;
+    background:repeating-linear-gradient(135deg, var(--amber) 0 4px, var(--graphite-2) 4px 8px);
+    flex-shrink:0;
+  }
+  header h1{font-size:20px;margin:0;font-weight:600;color:#fff;}
+  header .sub{font-size:11px;color:#B9C2CC;font-family:'IBM Plex Mono',monospace;text-transform:none;letter-spacing:.02em;margin-top:2px;}
+
+  .toolbar{
+    display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+  }
+  select, input[type=text], input[type=search]{
+    font-family:'Inter',sans-serif;
+    font-size:13px;
+    padding:9px 12px;
+    border-radius:4px;
+    border:1px solid rgba(255,255,255,0.18);
+    background:rgba(255,255,255,0.08);
+    color:#fff;
+  }
+  select option{color:#111;}
+  input[type=text]::placeholder, input[type=search]::placeholder{color:#B9C2CC;}
+  .btn{
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:13px;
+    padding:9px 16px;
+    border-radius:4px;
+    border:none;
+    cursor:pointer;
+    transition:transform .08s ease, box-shadow .08s ease;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn-primary{background:var(--amber);color:#241a05;}
+  .btn-primary:hover{box-shadow:0 0 0 3px rgba(232,163,61,.28);}
+  .btn-ghost{background:transparent;color:#F2F0EA;border:1px solid rgba(255,255,255,.28);}
+  .btn-ghost:hover{background:rgba(255,255,255,.08);}
+  .icon-btn{
+    width:36px;height:36px;border-radius:4px;border:1px solid rgba(255,255,255,.24);
+    background:transparent;color:#F2F0EA;cursor:pointer;display:flex;align-items:center;justify-content:center;
+    font-size:16px;
+  }
+  .icon-btn:hover{background:rgba(255,255,255,.1);}
+
+  /* ===== STATS STRIP ===== */
+  .stats{
+    display:flex;gap:1px;background:var(--line);
+    border-bottom:1px solid var(--line);
+    overflow-x:auto;
+  }
+  .stat{
+    background:var(--concrete-2);
+    padding:12px 18px;
+    min-width:132px;
+    flex-shrink:0;
+  }
+  .stat .label{font-size:10px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.06em;font-family:'IBM Plex Mono',monospace;}
+  .stat .value{font-family:'Oswald',sans-serif;font-size:22px;font-weight:600;margin-top:2px;}
+  .stat.total .value{color:var(--graphite);}
+
+  /* ===== FILTER ROW ===== */
+  .filterrow{
+    display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+    padding:12px 28px;
+    background:var(--concrete-2);
+    border-bottom:1px solid var(--line);
+  }
+  .filterrow select, .filterrow input{
+    border:1px solid var(--line);
+    background:var(--paper);
+    color:var(--ink);
+    font-size:13px;
+    padding:8px 10px;
+    border-radius:4px;
+  }
+  .pill{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:11px;font-family:'IBM Plex Mono',monospace;
+    padding:4px 9px;border-radius:20px;font-weight:500;
+  }
+  .pill.prgo{background:var(--prgo-soft);color:var(--prgo);}
+  .pill.lmpm{background:var(--lmpm-soft);color:var(--lmpm);}
+  .badge-com{margin-left:auto;font-size:11px;color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;}
+
+  /* ===== BOARD ===== */
+  #board{
+    display:flex;
+    gap:14px;
+    padding:18px 28px 40px;
+    overflow-x:auto;
+    align-items:flex-start;
+  }
+  .column{
+    background:var(--concrete-2);
+    border:1px solid var(--line);
+    border-radius:6px;
+    width:250px;
+    flex-shrink:0;
+    max-height:calc(100vh - 230px);
+    display:flex;
+    flex-direction:column;
+  }
+  .column .colhead{
+    padding:10px 12px 9px;
+    border-radius:6px 6px 0 0;
+    border-bottom:3px solid var(--stepcolor, var(--graphite));
+    background:var(--paper);
+  }
+  .column .colhead .title{font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;font-family:'Oswald',sans-serif;color:var(--graphite);}
+  .column .colhead .count{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-soft);margin-top:2px;}
+  .colbody{
+    padding:10px;
+    display:flex;flex-direction:column;gap:8px;
+    overflow-y:auto;
+  }
+  .card{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-left:4px solid var(--cardaccent, var(--graphite));
+    border-radius:4px;
+    padding:10px 11px;
+    cursor:pointer;
+    box-shadow:var(--shadow);
+    transition:transform .08s ease;
+  }
+  .card:hover{transform:translateY(-1px);}
+  .card .nom{font-weight:600;font-size:13.5px;color:var(--ink);}
+  .card .meta{display:flex;justify-content:space-between;align-items:center;margin-top:6px;}
+  .card .valo{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:var(--graphite);}
+  .card .date{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-soft);}
+  .card .date.soon{color:var(--lmpm);font-weight:600;}
+  .card .foot{margin-top:7px;display:flex;justify-content:space-between;align-items:center;}
+  .empty-col{padding:18px 8px;text-align:center;color:var(--ink-soft);font-size:11.5px;font-family:'IBM Plex Mono',monospace;}
+
+  /* ===== MODAL ===== */
+  .overlay{
+    position:fixed;inset:0;background:rgba(31,41,51,.55);
+    display:none;align-items:center;justify-content:center;z-index:50;padding:20px;
+  }
+  .overlay.open{display:flex;}
+  .modal{
+    background:var(--paper);
+    width:100%;max-width:520px;
+    border-radius:8px;
+    max-height:90vh;overflow-y:auto;
+    box-shadow:0 20px 60px rgba(0,0,0,.3);
+  }
+  .modal .mhead{
+    padding:18px 22px 14px;
+    border-bottom:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  .modal .mhead h2{font-size:17px;margin:0;color:var(--graphite);}
+  .modal .mbody{padding:18px 22px;display:flex;flex-direction:column;gap:14px;}
+  .modal .mfoot{padding:14px 22px 20px;display:flex;justify-content:space-between;gap:10px;border-top:1px solid var(--line);}
+  .field label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);margin-bottom:5px;font-family:'IBM Plex Mono',monospace;}
+  .field input, .field select, .field textarea{
+    width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:4px;font-size:14px;font-family:'Inter',sans-serif;background:var(--concrete-2);color:var(--ink);
+  }
+  .field textarea{resize:vertical;min-height:60px;font-family:'Inter',sans-serif;transition:min-height .18s ease;}
+  .field textarea.expanded{min-height:50vh;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .close-x{background:none;border:none;font-size:20px;cursor:pointer;color:var(--ink-soft);}
+  .danger{color:var(--slate-red);background:none;border:none;font-size:12px;cursor:pointer;font-family:'IBM Plex Mono',monospace;text-decoration:underline;}
+
+  .toast{
+    position:fixed;bottom:22px;right:22px;background:var(--graphite);color:#fff;
+    padding:12px 18px;border-radius:6px;font-size:13px;box-shadow:var(--shadow);
+    display:none;z-index:60;font-family:'Inter',sans-serif;
+  }
+  .toast.show{display:block;}
+  .loading-veil{
+    position:fixed;inset:0;background:rgba(237,234,227,.7);display:none;
+    align-items:center;justify-content:center;z-index:70;font-family:'IBM Plex Mono',monospace;color:var(--graphite);
+  }
+  .loading-veil.show{display:flex;}
+
+  #settingsModal .mbody{gap:16px;}
+  .commercial-row{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
+  .commercial-row input{flex:2;padding:8px 10px;border:1px solid var(--line);border-radius:4px;background:var(--concrete-2);font-size:13px;color:var(--ink);}
+  .commercial-row select{flex:1;padding:8px 10px;border:1px solid var(--line);border-radius:4px;background:var(--concrete-2);font-size:13px;color:var(--ink);}
+  .commercial-row .btn-remove-com{background:none;border:none;color:var(--slate-red);cursor:pointer;font-size:17px;padding:4px 6px;flex-shrink:0;}
+  .hint{font-size:11.5px;color:var(--ink-soft);line-height:1.5;}
+  .hint code{background:var(--concrete);padding:1px 5px;border-radius:3px;}
+
+  /* ===== VUE AUJOURD'HUI (mobile) ===== */
+  #todayView{padding:14px 16px 60px;max-width:640px;margin:0 auto;}
+  .today-empty{
+    text-align:center;padding:60px 20px;color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;font-size:13px;
+  }
+  .today-card{
+    background:var(--paper);border:1px solid var(--line);border-left:5px solid var(--cardaccent,var(--graphite));
+    border-radius:8px;padding:14px 16px;margin-bottom:12px;box-shadow:var(--shadow);
+  }
+  .today-card .thead{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+  .today-card .nom{font-size:16px;font-weight:700;color:var(--ink);}
+  .today-card .sub{font-size:12.5px;color:var(--ink-soft);margin-top:3px;font-family:'IBM Plex Mono',monospace;}
+  .today-card .statut-tag{font-size:10.5px;font-family:'IBM Plex Mono',monospace;padding:3px 8px;border-radius:20px;background:var(--concrete-2);border:1px solid var(--line);white-space:nowrap;}
+  .today-card .relance-info{margin-top:8px;font-size:12px;font-family:'IBM Plex Mono',monospace;}
+  .relance-info.overdue{color:var(--slate-red);font-weight:700;}
+  .today-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+  .call-btn{
+    flex:1;min-width:130px;display:flex;align-items:center;justify-content:center;gap:7px;
+    background:var(--moss);color:#fff;text-decoration:none;padding:12px 10px;border-radius:6px;
+    font-weight:700;font-size:14px;
+  }
+  .call-btn:active{opacity:.85;}
+  .dictate-btn{
+    flex:1;min-width:150px;display:flex;align-items:center;justify-content:center;gap:7px;
+    background:var(--graphite);color:#fff;border:none;padding:12px 10px;border-radius:6px;
+    font-weight:700;font-size:14px;cursor:pointer;
+  }
+  .dictate-btn.recording{background:var(--slate-red);animation:pulse 1.4s infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(166,75,75,.5);}70%{box-shadow:0 0 0 10px rgba(166,75,75,0);}100%{box-shadow:0 0 0 0 rgba(166,75,75,0);}}
+  .dictate-panel{margin-top:12px;border-top:1px dashed var(--line);padding-top:12px;}
+  .dictate-panel textarea{
+    width:100%;min-height:90px;padding:10px;border:1px solid var(--line);border-radius:6px;
+    font-family:'Inter',sans-serif;font-size:14px;background:var(--concrete-2);color:var(--ink);
+    transition:min-height .18s ease;
+  }
+  .dictate-panel textarea.expanded{min-height:50vh;}
+  .dictate-live{font-size:11.5px;color:var(--ink-soft);margin-top:5px;font-style:italic;min-height:16px;}
+  .dictate-panel-actions{display:flex;gap:8px;margin-top:8px;}
+  .dictate-panel-actions button{flex:1;padding:10px;border-radius:6px;font-size:13px;font-weight:600;border:none;cursor:pointer;}
+  .btn-save-cr{background:var(--amber);color:#241a05;}
+  .btn-cancel-cr{background:var(--concrete-2);color:var(--ink);border:1px solid var(--line) !important;}
+  .relance-quick{display:flex;gap:6px;align-items:center;margin-top:10px;flex-wrap:wrap;}
+  .relance-quick input[type=date]{padding:8px;border:1px solid var(--line);border-radius:6px;font-size:12.5px;background:var(--concrete-2);}
+  .relance-quick button{padding:8px 10px;font-size:12px;border-radius:6px;border:1px solid var(--line);background:var(--paper);cursor:pointer;color:var(--ink-soft);}
+  .today-status-select{margin-top:10px;width:100%;padding:9px;border:1px solid var(--line);border-radius:6px;background:var(--concrete-2);font-size:13px;color:var(--ink);}
+
+  @media (max-width: 720px){
+    header{padding:14px 16px;}
+    .filterrow{padding:10px 16px;}
+    #board{padding:14px 16px 30px;}
+    .row2{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="mark"></div>
+    <div>
+      <h1>Leads Commerciaux</h1>
+      <div class="sub">PRGO — Prestations Grand Ouest · LMPM — Le Mans / Perche / Mayenne</div>
+    </div>
+  </div>
+  <div class="toolbar">
+    <span id="sessionLabel" style="font-size:12px;font-family:'IBM Plex Mono',monospace;color:#F2F0EA;opacity:.85;"></span>
+    <select id="commercialFilter"></select>
+    <button class="btn btn-ghost" id="btnToggleView">📱 Aujourd'hui</button>
+    <button class="btn btn-ghost" id="btnChantiers" style="display:none;">🏗 Chantiers acceptés</button>
+    <button class="btn btn-primary" id="btnNew">+ Nouveau lead</button>
+    <button class="icon-btn" id="btnSettings" title="Paramètres Airtable">⚙</button>
+    <button class="icon-btn" id="btnLogout" title="Changer de code / déconnexion" style="display:none;">⇥</button>
+  </div>
+</header>
+
+<div class="stats" id="statsStrip"></div>
+
+<div class="filterrow">
+  <input type="search" id="searchBox" placeholder="Rechercher un client, une adresse…" style="min-width:220px;">
+  <select id="regionFilter">
+    <option value="">Toutes régions</option>
+    <option value="PRGO">PRGO</option>
+    <option value="LMPM">LMPM</option>
+  </select>
+  <select id="sortBy">
+    <option value="date_asc">Date prévisionnelle ↑</option>
+    <option value="date_desc">Date prévisionnelle ↓</option>
+    <option value="valo_desc">Valorisation ↓</option>
+    <option value="valo_asc">Valorisation ↑</option>
+    <option value="recent">Plus récents</option>
+  </select>
+  <span class="badge-com" id="filterSummary"></span>
+  <span class="badge-com" id="lastSync" style="margin-left:auto;"></span>
+</div>
+
+<div id="board"></div>
+
+<!-- ===== VUE MOBILE — RELANCES DU JOUR ===== -->
+<div id="todayView" style="display:none;">
+  <div id="todayList"></div>
+</div>
+
+<!-- ===== VUE ADMIN — CHANTIERS ACCEPTÉS ===== -->
+<div id="chantiersView" style="display:none;">
+  <div id="chantiersList"></div>
+</div>
+
+<!-- ===== MODAL LEAD ===== -->
+<div class="overlay" id="leadOverlay">
+  <div class="modal">
+    <div class="mhead">
+      <div>
+        <h2 id="leadModalTitle">Nouveau lead</h2>
+        <div id="leadModalCreation" style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--ink-soft);text-transform:none;letter-spacing:0;margin-top:3px;"></div>
+      </div>
+      <button class="close-x" id="closeLeadModal">✕</button>
+    </div>
+    <div class="mbody">
+      <div class="row2">
+        <div class="field">
+          <label>Nom de l'entreprise</label>
+          <input type="text" id="f_entreprise" placeholder="Ex : SARL Dupont Bâtiment">
+        </div>
+        <div class="field">
+          <label>Nom de l'interlocuteur</label>
+          <input type="text" id="f_interlocuteur" placeholder="Ex : M. Dupont">
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Téléphone</label>
+          <input type="text" id="f_telephone" placeholder="06 xx xx xx xx">
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="text" id="f_email" placeholder="client@mail.fr">
+        </div>
+      </div>
+      <div class="field">
+        <label>Adresse / commune</label>
+        <input type="text" id="f_adresse" placeholder="Ex : Chailland (53)">
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Région</label>
+          <select id="f_region">
+            <option value="PRGO">PRGO</option>
+            <option value="LMPM">LMPM</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Commercial</label>
+          <select id="f_commercial"></select>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Statut</label>
+          <select id="f_statut"></select>
+        </div>
+        <div class="field">
+          <label>Valorisation (€)</label>
+          <input type="text" id="f_valorisation" placeholder="Ex : 3500">
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Date prévisionnelle du projet</label>
+          <input type="date" id="f_date" style="background:var(--moss-soft);border-color:var(--moss);">
+        </div>
+        <div class="field">
+          <label style="display:flex;align-items:center;justify-content:space-between;">
+            <span>Prochaine relance</span>
+            <button type="button" id="btnClearRelance" style="font-size:10.5px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:4px;border:1px solid var(--line);background:var(--concrete-2);color:var(--ink-soft);cursor:pointer;text-transform:none;letter-spacing:0;">✕ Effacer</button>
+          </label>
+          <input type="date" id="f_relance">
+        </div>
+      </div>
+      <div class="field">
+        <label>Créneau de relance</label>
+        <select id="f_creneau"></select>
+      </div>
+      <div class="field" style="background:var(--slate-red-soft);border:1px solid var(--slate-red);border-radius:6px;padding:10px 12px;">
+        <label style="display:flex;align-items:center;gap:9px;cursor:pointer;margin-bottom:0;color:var(--slate-red);text-transform:none;letter-spacing:0;font-size:13px;font-family:'Inter',sans-serif;font-weight:600;">
+          <input type="checkbox" id="f_par_lucas" style="width:18px;height:18px;accent-color:var(--slate-red);">
+          Saisi par Lucas — nouveau contact à traiter en priorité
+        </label>
+      </div>
+      <div class="field">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;gap:6px;">
+          <label style="margin-bottom:0;">Notes</label>
+          <div style="display:flex;gap:6px;">
+            <button type="button" id="btnExpandNotes" style="font-size:11px;font-family:'IBM Plex Mono',monospace;padding:5px 9px;border-radius:4px;border:1px solid var(--line);background:var(--concrete-2);color:var(--ink-soft);cursor:pointer;">⤢ Agrandir</button>
+            <button type="button" id="btnInsertDate" style="font-size:11px;font-family:'IBM Plex Mono',monospace;padding:5px 9px;border-radius:4px;border:1px solid var(--line);background:var(--concrete-2);color:var(--ink-soft);cursor:pointer;">🗓 Insérer la date</button>
+          </div>
+        </div>
+        <textarea id="f_notes" placeholder="Détails, historique d'échanges…"></textarea>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="danger" id="btnDelete" style="display:none;">Supprimer ce lead</button>
+      <div style="margin-left:auto;display:flex;gap:10px;">
+        <button class="btn btn-ghost" id="btnCancel" style="color:var(--ink);border-color:var(--line);">Annuler</button>
+        <button class="btn btn-primary" id="btnSave">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL SETTINGS ===== -->
+<div class="overlay" id="settingsOverlay">
+  <div class="modal">
+    <div class="mhead">
+      <h2>Paramètres</h2>
+      <button class="close-x" id="closeSettingsModal">✕</button>
+    </div>
+    <div class="mbody">
+      <div class="field">
+        <label>Airtable — Personal Access Token</label>
+        <input type="text" id="s_pat" placeholder="patXXXXXXXXXXXXXX">
+      </div>
+      <div class="field">
+        <label>Airtable — Base ID</label>
+        <input type="text" id="s_base" placeholder="appXXXXXXXXXXXXXX">
+      </div>
+      <div class="field">
+        <label>Airtable — Nom de la table</label>
+        <input type="text" id="s_table" placeholder="Leads">
+      </div>
+      <div class="field" style="background:var(--moss-soft);border:1px solid var(--moss);border-radius:6px;padding:10px 12px;">
+        <label style="color:var(--moss);">Table "Chantiers" (transfert automatique)</label>
+        <input type="text" id="s_chantiers_table" placeholder="Chantiers">
+        <p class="hint" style="margin-top:6px;">Dès qu'un lead passe au statut "Chantier accepté", une fiche est créée automatiquement dans cette table pour le suivi d'exécution (planning, matériel, facturation). Champs requis dans cette table : <code>LeadRecordId</code>, <code>Entreprise</code>, <code>Interlocuteur</code>, <code>Telephone</code>, <code>Adresse</code>, <code>Region</code>, <code>Commercial</code>, <code>Valorisation</code>, <code>DateChantierPrevue</code>, <code>StatutChantier</code> (sélection unique : À planifier / Planifié / En cours / Terminé / Facturé / Soldé). Laissez ce champ vide pour désactiver le transfert automatique.</p>
+      </div>
+      <div class="field">
+        <label>Commerciaux</label>
+        <div id="commercialsList"></div>
+        <button type="button" class="btn btn-ghost" id="btnAddCommercial" style="margin-top:6px;color:var(--ink);border-color:var(--line);">+ Ajouter un commercial</button>
+        <p class="hint" style="margin-top:8px;">Le "Code d'accès" est personnel : chaque commercial ne verra, une fois connecté, que ses propres leads.</p>
+      </div>
+      <div class="field">
+        <label>Code administrateur (voit tous les leads)</label>
+        <input type="text" id="s_admin_code" placeholder="Ex : DAVID2026">
+      </div>
+      <div class="field" style="background:var(--concrete-2);border:1px solid var(--line);border-radius:6px;padding:10px 12px;">
+        <label style="display:flex;align-items:center;gap:9px;cursor:pointer;margin-bottom:0;text-transform:none;letter-spacing:0;font-size:13px;font-family:'Inter',sans-serif;font-weight:600;color:var(--ink);">
+          <input type="checkbox" id="s_sound_enabled" style="width:18px;height:18px;">
+          🔔 Jouer un son à l'arrivée d'un nouveau lead
+        </label>
+      </div>
+      <p class="hint">
+        La table Airtable doit contenir exactement ces champs (respecter la casse) :<br>
+        <code>Entreprise</code>, <code>Interlocuteur</code>, <code>Telephone</code>, <code>Email</code>, <code>Adresse</code>,
+        <code>Region</code> (sélection unique : PRGO / LMPM),
+        <code>Commercial</code> (texte ou sélection unique),
+        <code>Statut</code> (sélection unique — 9 valeurs, voir ci-dessous),
+        <code>Valorisation</code> (nombre), <code>DatePrevisionnelle</code> (date),
+        <code>ProchaineRelance</code> (date — pilote la vue "Aujourd'hui"), <code>Notes</code> (texte long),
+        <code>DateCreation</code> (type <strong>Created time</strong> — se remplit automatiquement, ne pas saisir manuellement),
+        <code>SaisiParLucas</code> (type <strong>Case à cocher / Checkbox</strong>),
+        <code>CreneauRelance</code> (sélection unique : <code>Début de matinée</code>, <code>Fin de matinée</code>,
+        <code>Début d'après-midi</code>, <code>Fin d'après-midi</code>, <code>Début de soirée</code>).<br><br>
+        Valeurs exactes du champ Statut : <code>Contact à prendre</code>, <code>Visite technique à faire</code>,
+        <code>Devis à faire</code>, <code>ARD</code>, <code>Chantier accepté</code>, <code>Chantier programmé</code>,
+        <code>Chantier en cours</code>, <code>Chantier terminé</code>, <code>Sans suite</code>.<br><br>
+        📱 La dictée vocale (bouton "Compte-rendu") utilise le micro du téléphone — elle nécessite Chrome sur Android
+        (ou Safari récent sur iPhone) et l'autorisation d'accès au microphone.
+      </p>
+    </div>
+    <div class="mfoot">
+      <div style="margin-left:auto;display:flex;gap:10px;">
+        <button class="btn btn-ghost" id="btnCancelSettings" style="color:var(--ink);border-color:var(--line);">Annuler</button>
+        <button class="btn btn-primary" id="btnSaveSettings">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ECRAN DE CONNEXION (code d'accès) ===== -->
+<div class="overlay" id="loginOverlay" style="z-index:80;">
+  <div class="modal" style="max-width:340px;">
+    <div class="mhead">
+      <h2 style="font-size:16px;">Accès CRM Leads</h2>
+    </div>
+    <div class="mbody">
+      <div class="field">
+        <label>Code d'accès personnel</label>
+        <input type="password" id="loginCode" placeholder="••••" inputmode="numeric" autocomplete="off">
+      </div>
+      <div id="loginError" style="display:none;color:var(--slate-red);font-size:12.5px;">Code incorrect — vérifiez auprès de David.</div>
+    </div>
+    <div class="mfoot" style="flex-direction:column;gap:10px;align-items:stretch;">
+      <button class="btn btn-primary" id="btnLogin" style="width:100%;">Se connecter</button>
+      <button type="button" id="btnResetCodes" style="background:none;border:none;color:var(--ink-soft);font-size:11.5px;text-decoration:underline;cursor:pointer;padding:2px;">Code oublié ? Réinitialiser l'accès sur cet appareil</button>
+    </div>
+  </div>
+</div>
+
+<div class="loading-veil" id="loadingVeil">Chargement…</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   CONFIG — statuts du pipeline (ordre = ordre des colonnes)
+   ========================================================= */
+const STATUTS = [
+  { key:"Contact à prendre",        color:"#8891A0" },
+  { key:"Visite technique à faire", color:"#5C7FA6" },
+  { key:"Devis à faire",            color:"#3B6E8F" },
+  { key:"ARD",                      color:"#7A6BB0" },
+  { key:"Chantier accepté",         color:"#4B9B6E" },
+  { key:"Chantier programmé",       color:"#E8A33D" },
+  { key:"Chantier en cours",        color:"#D9822B" },
+  { key:"Chantier terminé",         color:"#4B7B4E" },
+  { key:"Sans suite",               color:"#A64B4B" },
+];
+const CRENEAUX = [
+  { key:"Début de matinée",     heure:"09:00", icon:"🌅" },
+  { key:"Fin de matinée",       heure:"11:00", icon:"🌤️" },
+  { key:"Début d'après-midi",   heure:"14:00", icon:"☀️" },
+  { key:"Fin d'après-midi",     heure:"16:30", icon:"🌇" },
+  { key:"Début de soirée",      heure:"18:30", icon:"🌆" },
+];
+const FIELD = {
+  entreprise:"Entreprise", interlocuteur:"Interlocuteur", tel:"Telephone", email:"Email", adresse:"Adresse",
+  region:"Region", commercial:"Commercial", statut:"Statut",
+  valo:"Valorisation", date:"DatePrevisionnelle", notes:"Notes",
+  relance:"ProchaineRelance", creation:"DateCreation", parLucas:"SaisiParLucas", creneau:"CreneauRelance"
+};
+
+let cfg = JSON.parse(localStorage.getItem("crmLeadsConfig") || "{}");
+if(!cfg.commercials){
+  cfg.commercials = [
+    { name: cfg.comPRGO || "Raynald KOUASSI", region:"PRGO" },
+    { name: "David GUENAUD", region:"PRGO" },
+    { name: cfg.comLMPM || "Jérôme GOUSSOT", region:"LMPM" },
+  ];
+  delete cfg.comPRGO;
+  delete cfg.comLMPM;
+}
+let tempCommercials = [];
+
+let currentView = "kanban"; // "kanban" | "today"
+let recognition = null;
+let recordingLeadId = null;
+let dictationBuffer = "";
+let lastFinalChunks = []; // anti-doublon de la reconnaissance vocale
+let session = JSON.parse(localStorage.getItem("crmSession") || "null"); // {type:"admin"} ou {type:"commercial", name}
+
+let leads = [];      // cache local des enregistrements Airtable
+let editingId = null;
+let knownLeadIds = null; // null = pas encore initialisé (pas de son au tout premier chargement)
+let audioCtx = null;
+let parLucasWasChecked = false; // état de la case "Saisi par Lucas" à l'ouverture de la fiche
+
+/* =========================================================
+   HELPERS UI
+   ========================================================= */
+const $ = (id) => document.getElementById(id);
+function toast(msg){
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"), 2800);
+}
+function veil(show){ $("loadingVeil").classList.toggle("show", show); }
+function displayName(l){
+  const ent = (l[FIELD.entreprise]||"").trim();
+  const inter = (l[FIELD.interlocuteur]||"").trim();
+  if(ent && inter) return `${ent} — ${inter}`;
+  return ent || inter || "(sans nom)";
+}
+function euro(n){
+  if(n === null || n === undefined || n === "") return "—";
+  return Number(n).toLocaleString("fr-FR", {maximumFractionDigits:0}) + " €";
+}
+function fmtDate(d){
+  if(!d) return "—";
+  const dt = new Date(d + "T00:00:00");
+  if(isNaN(dt)) return d;
+  return dt.toLocaleDateString("fr-FR", {day:"2-digit", month:"2-digit", year:"numeric"});
+}
+function fmtDateTime(iso){
+  if(!iso) return "—";
+  const dt = new Date(iso);
+  if(isNaN(dt)) return iso;
+  return dt.toLocaleDateString("fr-FR", {day:"2-digit", month:"2-digit", year:"numeric"});
+}
+function isSoon(d){
+  if(!d) return false;
+  const dt = new Date(d + "T00:00:00");
+  const diff = (dt - new Date()) / 86400000;
+  return diff >= 0 && diff <= 30;
+}
+
+/* =========================================================
+   SELECTS dynamiques (commerciaux)
+   ========================================================= */
+function populateCommercialSelects(){
+  const opts = [{v:"", l:"Tous les commerciaux"}]
+    .concat(cfg.commercials.map(c=>({v:c.name, l:`${c.name} — ${c.region}`})));
+  $("commercialFilter").innerHTML = opts.map(o=>`<option value="${o.v}">${o.l}</option>`).join("");
+
+  $("f_commercial").innerHTML = cfg.commercials
+    .map(c=>`<option value="${c.name}" data-region="${c.region}">${c.name}</option>`).join("");
+
+  $("f_statut").innerHTML = STATUTS.map(s=>`<option value="${s.key}">${s.key}</option>`).join("");
+  $("f_creneau").innerHTML = CRENEAUX.map(c=>`<option value="${c.key}">${c.icon} ${c.key} (~${c.heure})</option>`).join("");
+}
+function updateCommercialOptionsForRegion(region, keepValue){
+  const opts = cfg.commercials.filter(c=> !region || c.region === region);
+  const list = opts.length ? opts : cfg.commercials; // filet de sécurité si une région n'a aucun commercial
+  $("f_commercial").innerHTML = list.map(c=>`<option value="${c.name}">${c.name}</option>`).join("");
+  if(keepValue && list.some(c=>c.name === keepValue)){
+    $("f_commercial").value = keepValue;
+  }
+}
+
+/* =========================================================
+   AIRTABLE
+   ========================================================= */
+function airtableReady(){
+  return cfg.pat && cfg.base && cfg.table;
+}
+/* =========================================================
+   SESSION — code d'accès personnel
+   ========================================================= */
+function codesConfigured(){
+  return !!(cfg.adminCode || (cfg.commercials||[]).some(c=>c.code));
+}
+function checkSession(){
+  if(!codesConfigured()){
+    // Fonctionnalité non activée par l'administrateur : accès complet, pas de gate.
+    session = session || {type:"admin"};
+    hideLogin();
+    applySessionUI();
+    return;
+  }
+  if(session){
+    hideLogin();
+    applySessionUI();
+  } else {
+    showLogin();
+  }
+}
+function showLogin(){ $("loginOverlay").classList.add("open"); }
+function hideLogin(){ $("loginOverlay").classList.remove("open"); }
+function applySessionUI(){
+  const gated = codesConfigured();
+  const isAdmin = !session || session.type === "admin";
+  $("btnChantiers").style.display = isAdmin ? "inline-flex" : "none";
+  if(!isAdmin && currentView === "chantiers"){
+    setView("kanban");
+  }
+  if(session && session.type === "commercial"){
+    $("sessionLabel").textContent = `👤 ${session.name}`;
+    $("commercialFilter").value = session.name;
+    $("commercialFilter").disabled = true;
+    $("btnLogout").style.display = "inline-flex";
+  } else {
+    $("sessionLabel").textContent = gated ? "👤 Administrateur" : "";
+    $("commercialFilter").disabled = false;
+    $("btnLogout").style.display = gated ? "inline-flex" : "none";
+  }
+}
+$("btnLogin").addEventListener("click", ()=> attemptLogin());
+$("loginCode").addEventListener("keydown", (e)=>{ if(e.key === "Enter") attemptLogin(); });
+function attemptLogin(){
+  const code = $("loginCode").value.trim();
+  if(!code) return;
+  let matched = null;
+  if(cfg.adminCode && code === cfg.adminCode){
+    matched = {type:"admin"};
+  } else {
+    const c = (cfg.commercials||[]).find(x=> x.code && x.code === code);
+    if(c) matched = {type:"commercial", name:c.name};
+  }
+  if(matched){
+    session = matched;
+    localStorage.setItem("crmSession", JSON.stringify(session));
+    $("loginError").style.display = "none";
+    $("loginCode").value = "";
+    hideLogin();
+    applySessionUI();
+    fetchLeads();
+  } else {
+    $("loginError").style.display = "block";
+  }
+}
+$("btnLogout").addEventListener("click", ()=>{
+  localStorage.removeItem("crmSession");
+  session = null;
+  applySessionUI();
+  showLogin();
+});
+$("btnResetCodes").addEventListener("click", ()=>{
+  const ok = confirm(
+    "Ceci supprime tous les codes d'accès enregistrés sur CET APPAREIL uniquement " +
+    "(vos identifiants Airtable — Token, Base ID, table — sont conservés).\n\n" +
+    "Vous retrouverez un accès complet, sans code, pour reconfigurer les codes " +
+    "via ⚙ Paramètres. Continuer ?"
+  );
+  if(!ok) return;
+  cfg.adminCode = null;
+  (cfg.commercials||[]).forEach(c=> c.code = "");
+  localStorage.setItem("crmLeadsConfig", JSON.stringify(cfg));
+  localStorage.removeItem("crmSession");
+  session = null;
+  toast("Codes réinitialisés — accès complet restauré sur cet appareil");
+  checkSession();
+  fetchLeads();
+});
+
+/* =========================================================
+   SON — carillon à l'arrivée d'un nouveau lead
+   ========================================================= */
+function primeAudio(){
+  if(!audioCtx){
+    try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){}
+  } else if(audioCtx.state === "suspended"){
+    audioCtx.resume();
+  }
+}
+document.addEventListener("pointerdown", primeAudio);
+function playNewLeadChime(){
+  if(!audioCtx || cfg.soundEnabled === false) return;
+  const now = audioCtx.currentTime;
+  [880, 1174.66].forEach((freq, i)=>{
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = "sine";
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0, now + i*0.15);
+    gain.gain.linearRampToValueAtTime(0.25, now + i*0.15 + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + i*0.15 + 0.3);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(now + i*0.15);
+    osc.stop(now + i*0.15 + 0.32);
+  });
+}
+function detectNewLeads(freshList){
+  const freshIds = new Set(freshList.map(l=>l.id));
+  if(knownLeadIds){
+    const brandNew = freshList.filter(l=> !knownLeadIds.has(l.id));
+    if(brandNew.length > 0){
+      playNewLeadChime();
+      toast(brandNew.length === 1 ? "🔔 Nouveau lead reçu" : `🔔 ${brandNew.length} nouveaux leads reçus`);
+    }
+  }
+  knownLeadIds = freshIds;
+}
+async function fetchLeads(){
+  if(!airtableReady()){ leads = []; render(); return; }
+  veil(true);
+  try{
+    let all = [];
+    let offset = null;
+    const formula = (session && session.type === "commercial")
+      ? `{${FIELD.commercial}}="${session.name.replace(/"/g,'\\"')}"`
+      : null;
+    do{
+      const url = new URL(`https://api.airtable.com/v0/${cfg.base}/${encodeURIComponent(cfg.table)}`);
+      url.searchParams.set("pageSize", "100");
+      if(offset) url.searchParams.set("offset", offset);
+      if(formula) url.searchParams.set("filterByFormula", formula);
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${cfg.pat}` } });
+      if(!res.ok){
+        const errBody = await res.text();
+        throw new Error(`Airtable ${res.status} — ${errBody}`);
+      }
+      const data = await res.json();
+      all = all.concat(data.records);
+      offset = data.offset;
+    } while(offset);
+    const freshList = all.map(r => ({ id:r.id, ...r.fields }));
+    detectNewLeads(freshList);
+    leads = freshList;
+    render();
+    const now = new Date();
+    $("lastSync").textContent = `🔄 Synchro : ${now.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}`;
+  }catch(err){
+    console.error(err);
+    toast("Erreur de connexion Airtable — voir Paramètres");
+  }finally{
+    veil(false);
+  }
+}
+async function sendToChantiers(leadId){
+  if(!cfg.chantiersTable){
+    return; // transfert non configuré — pas d'erreur, juste ignoré
+  }
+  const l = leads.find(x=>x.id===leadId);
+  if(!l) return;
+  const fields = {
+    LeadRecordId: leadId,
+    Entreprise: l[FIELD.entreprise] || "",
+    Interlocuteur: l[FIELD.interlocuteur] || "",
+    Telephone: l[FIELD.tel] || "",
+    Adresse: l[FIELD.adresse] || "",
+    Region: l[FIELD.region] || "",
+    Commercial: l[FIELD.commercial] || "",
+    Valorisation: l[FIELD.valo] || null,
+    DateChantierPrevue: l[FIELD.date] || null,
+    StatutChantier: "À planifier",
+  };
+  try{
+    const url = `https://api.airtable.com/v0/${cfg.base}/${encodeURIComponent(cfg.chantiersTable)}`;
+    const res = await fetch(url, {
+      method:"POST",
+      headers:{ Authorization:`Bearer ${cfg.pat}`, "Content-Type":"application/json" },
+      body: JSON.stringify({ fields })
+    });
+    if(!res.ok){
+      const errBody = await res.text();
+      throw new Error(errBody);
+    }
+    toast("📤 Chantier envoyé vers le programme de suivi");
+  }catch(err){
+    console.error(err);
+    alert(
+      "Le lead est bien passé en \"Chantier accepté\", mais le transfert automatique vers la table " +
+      "\"" + cfg.chantiersTable + "\" a échoué.\n\nVérifiez que cette table existe dans Airtable avec les champs : " +
+      "LeadRecordId, Entreprise, Interlocuteur, Telephone, Adresse, Region, Commercial, Valorisation, " +
+      "DateChantierPrevue, StatutChantier (voir Paramètres pour le détail)."
+    );
+  }
+}
+async function saveLead(payload, id){
+  veil(true);
+  try{
+    const url = `https://api.airtable.com/v0/${cfg.base}/${encodeURIComponent(cfg.table)}${id ? "/"+id : ""}`;
+    const res = await fetch(url, {
+      method: id ? "PATCH" : "POST",
+      headers: {
+        Authorization: `Bearer ${cfg.pat}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ fields: payload })
+    });
+    if(!res.ok){
+      const errBody = await res.text();
+      throw new Error(`Airtable ${res.status} — ${errBody}`);
+    }
+    const saved = await res.json();
+    toast(id ? "Lead mis à jour" : "Lead créé");
+    await fetchLeads();
+    closeLeadModal();
+    return saved; // { id, fields, ... }
+  }catch(err){
+    console.error(err);
+    toast("Échec de l'enregistrement — voir Paramètres / champs Airtable");
+    return null;
+  }finally{
+    veil(false);
+  }
+}
+async function deleteLead(id){
+  if(session && session.type === "commercial"){
+    toast("Seul l'administrateur peut supprimer un lead");
+    return;
+  }
+  if(!confirm("Supprimer définitivement ce lead ?")) return;
+  veil(true);
+  try{
+    const url = `https://api.airtable.com/v0/${cfg.base}/${encodeURIComponent(cfg.table)}/${id}`;
+    const res = await fetch(url, { method:"DELETE", headers:{ Authorization:`Bearer ${cfg.pat}` } });
+    if(!res.ok) throw new Error(await res.text());
+    toast("Lead supprimé");
+    await fetchLeads();
+    closeLeadModal();
+  }catch(err){
+    console.error(err);
+    toast("Échec de la suppression");
+  }finally{
+    veil(false);
+  }
+}
+
+/* =========================================================
+   RENDER
+   ========================================================= */
+function currentFilters(){
+  return {
+    commercial: $("commercialFilter").value,
+    region: $("regionFilter").value,
+    search: $("searchBox").value.trim().toLowerCase(),
+    sort: $("sortBy").value,
+  };
+}
+function applyFilters(list){
+  const f = currentFilters();
+  let out = list.filter(l=>{
+    if(f.commercial && l[FIELD.commercial] !== f.commercial) return false;
+    if(f.region && l[FIELD.region] !== f.region) return false;
+    if(f.search){
+      const hay = `${l[FIELD.entreprise]||""} ${l[FIELD.interlocuteur]||""} ${l[FIELD.adresse]||""} ${l[FIELD.notes]||""}`.toLowerCase();
+      if(!hay.includes(f.search)) return false;
+    }
+    return true;
+  });
+  out.sort((a,b)=>{
+    const da = a[FIELD.date] || "9999-99-99", db = b[FIELD.date] || "9999-99-99";
+    const va = Number(a[FIELD.valo])||0, vb = Number(b[FIELD.valo])||0;
+    switch(f.sort){
+      case "date_asc": return da.localeCompare(db);
+      case "date_desc": return db.localeCompare(da);
+      case "valo_desc": return vb - va;
+      case "valo_asc": return va - vb;
+      case "recent": return (b.id||"").localeCompare(a.id||"");
+      default: return 0;
+    }
+  });
+  return out;
+}
+
+function render(){
+  renderStats();
+  if(currentView === "today"){
+    renderToday();
+  } else if(currentView === "chantiers"){
+    renderChantiers();
+  } else {
+    renderBoard();
+  }
+}
+
+function renderStats(){
+  const f = currentFilters();
+  const list = applyFilters(leads);
+  const CONFIRMED = ["Chantier accepté", "Chantier programmé", "Chantier en cours"];
+  const totalValo = list
+    .filter(l=> CONFIRMED.includes(l[FIELD.statut]))
+    .reduce((s,l)=> s + (Number(l[FIELD.valo])||0), 0);
+  const soon = list.filter(l=> isSoon(l[FIELD.date])).length;
+  const enCours = list.filter(l=> l[FIELD.statut]==="Chantier en cours").length;
+  const aTraiter = list.filter(l=> ["Contact à prendre","Visite technique à faire","Devis à faire"].includes(l[FIELD.statut])).length;
+
+  $("statsStrip").innerHTML = `
+    <div class="stat total"><div class="label">Leads affichés</div><div class="value mono">${list.length}</div></div>
+    <div class="stat"><div class="label">Valorisation chantiers confirmés</div><div class="value mono">${euro(totalValo)}</div></div>
+    <div class="stat"><div class="label">À traiter</div><div class="value mono">${aTraiter}</div></div>
+    <div class="stat"><div class="label">Chantiers en cours</div><div class="value mono">${enCours}</div></div>
+    <div class="stat"><div class="label">Échéance &lt; 30 j</div><div class="value mono">${soon}</div></div>
+  `;
+  $("filterSummary").textContent = airtableReady() ? "" : "⚠ Airtable non configuré — voir ⚙";
+}
+
+function renderBoard(){
+  const list = applyFilters(leads);
+  const board = $("board");
+  board.innerHTML = STATUTS.map(st=>{
+    const items = list.filter(l=> l[FIELD.statut] === st.key);
+    const cards = items.map(l=>{
+      const region = l[FIELD.region] || "";
+      const accent = l[FIELD.parLucas] ? "var(--slate-red)" : (region === "PRGO" ? "var(--prgo)" : region === "LMPM" ? "var(--lmpm)" : "var(--graphite)");
+      const dateClass = isSoon(l[FIELD.date]) ? "date soon" : "date";
+      return `
+        <div class="card" style="--cardaccent:${accent}" data-id="${l.id}">
+          ${l[FIELD.parLucas] ? `<div style="font-size:9.5px;font-weight:700;color:var(--slate-red);font-family:'IBM Plex Mono',monospace;margin-bottom:4px;">🆕 LUCAS</div>` : ''}
+          <div class="nom">${escapeHtml(displayName(l))}</div>
+          <div class="meta">
+            <span class="pill ${region==='PRGO'?'prgo':'lmpm'}">${region || "—"}</span>
+            <span class="valo">${euro(l[FIELD.valo])}</span>
+          </div>
+          <div class="foot">
+            <span class="${dateClass}">${fmtDate(l[FIELD.date])}</span>
+            <span style="font-size:10.5px;color:var(--ink-soft);">${(l[FIELD.commercial]||"").split(" ")[0]||""}</span>
+          </div>
+          <div style="margin-top:5px;font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--ink-soft);opacity:.75;">
+            Créé le ${fmtDateTime(l[FIELD.creation])}
+          </div>
+        </div>`;
+    }).join("");
+    return `
+      <div class="column" style="--stepcolor:${st.color}">
+        <div class="colhead">
+          <div class="title">${st.key}</div>
+          <div class="count">${items.length} lead${items.length>1?"s":""} · <span style="color:var(--graphite);font-weight:600;">${euro(items.reduce((s,l)=> s + (Number(l[FIELD.valo])||0), 0))}</span></div>
+        </div>
+        <div class="colbody">
+          ${cards || `<div class="empty-col">Aucun lead</div>`}
+        </div>
+      </div>`;
+  }).join("");
+
+  board.querySelectorAll(".card").forEach(el=>{
+    el.addEventListener("click", ()=> openLeadModal(el.dataset.id));
+  });
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+/* =========================================================
+   VUE "AUJOURD'HUI" — relances du jour, appel, dictée
+   ========================================================= */
+function today(){
+  const d = new Date();
+  return d.toISOString().slice(0,10);
+}
+function renderToday(){
+  const f = currentFilters();
+  const t = today();
+  let list = leads.filter(l=>{
+    if(f.commercial && l[FIELD.commercial] !== f.commercial) return false;
+    if(f.region && l[FIELD.region] !== f.region) return false;
+    const r = l[FIELD.relance];
+    return r && r <= t; // relance du jour ou en retard
+  });
+
+  const wrap = $("todayList");
+  if(list.length === 0){
+    wrap.innerHTML = `<div class="today-empty">Aucune relance en attente aujourd'hui.<br>Bonne journée !</div>`;
+    return;
+  }
+
+  const lucasList = list.filter(l=> l[FIELD.parLucas]);
+  const rest = list.filter(l=> !l[FIELD.parLucas]);
+  const byDateAsc = (a,b)=> (a[FIELD.relance]||"").localeCompare(b[FIELD.relance]||"");
+  lucasList.sort(byDateAsc);
+
+  const groups = CRENEAUX.map(c=>({...c, items:[]}));
+  const noCreneau = [];
+  rest.forEach(l=>{
+    const g = groups.find(g=> g.key === l[FIELD.creneau]);
+    if(g) g.items.push(l); else noCreneau.push(l);
+  });
+  groups.forEach(g=> g.items.sort(byDateAsc));
+  noCreneau.sort(byDateAsc);
+
+  let html = "";
+  if(lucasList.length){
+    html += lucasList.map(l=> todayCardHtml(l, t)).join("");
+  }
+  if(noCreneau.length){
+    html += sectionHeaderHtml("🕓 Sans créneau assigné", noCreneau.length) + noCreneau.map(l=> todayCardHtml(l, t)).join("");
+  }
+  groups.forEach(g=>{
+    if(g.items.length){
+      html += sectionHeaderHtml(`${g.icon} ${g.key} (~${g.heure})`, g.items.length) + g.items.map(l=> todayCardHtml(l, t)).join("");
+    }
+  });
+  wrap.innerHTML = html;
+}
+function sectionHeaderHtml(label, count){
+  return `<div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.04em;color:#fff;background:var(--graphite);padding:8px 12px;border-radius:6px;margin:18px 0 10px;">
+    <span>${label}</span>
+    <span style="margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;background:rgba(255,255,255,.15);padding:2px 8px;border-radius:20px;">${count}</span>
+  </div>`;
+}
+function todayCardHtml(l, t){
+  const region = l[FIELD.region] || "";
+  const isLucas = !!l[FIELD.parLucas];
+  const accent = isLucas ? "var(--slate-red)" : (region === "PRGO" ? "var(--prgo)" : region === "LMPM" ? "var(--lmpm)" : "var(--graphite)");
+  const overdue = l[FIELD.relance] < t;
+  const tel = (l[FIELD.tel]||"").replace(/[^\d+]/g,"");
+  return `
+    <div class="today-card" style="--cardaccent:${accent}${isLucas ? ';box-shadow:0 0 0 2px var(--slate-red);' : ''}" data-id="${l.id}">
+      ${isLucas ? `<div style="background:var(--slate-red);color:#fff;font-size:11px;font-weight:700;padding:4px 9px;border-radius:4px;display:inline-block;margin-bottom:8px;font-family:'IBM Plex Mono',monospace;">🆕 NOUVEAU CONTACT — SAISI PAR LUCAS</div>` : ''}
+      <div class="thead">
+        <div>
+          <div class="nom">${escapeHtml(displayName(l))}</div>
+          <div class="sub">${escapeHtml(l[FIELD.adresse]||"")} · ${euro(l[FIELD.valo])}</div>
+        </div>
+        <span class="statut-tag">${escapeHtml(l[FIELD.statut]||"")}</span>
+      </div>
+      <div class="relance-info ${overdue?'overdue':''}">${overdue ? '⚠ En retard depuis' : 'Relance prévue'} le ${fmtDate(l[FIELD.relance])}</div>
+
+      <div class="today-actions">
+        ${tel ? `<a class="call-btn" href="tel:${tel}">📞 Appeler</a>` : `<span class="call-btn" style="background:var(--line);color:var(--ink-soft);">Pas de numéro</span>`}
+        <button class="dictate-btn" onclick="toggleDictate('${l.id}')" id="dictbtn-${l.id}">📝 Notes / Compte-rendu</button>
+      </div>
+
+      <div class="dictate-panel" id="dictpanel-${l.id}" hidden>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;gap:8px;">
+          <button type="button" onclick="toggleRecording('${l.id}')" id="recbtn-${l.id}" style="font-size:12px;font-weight:700;padding:7px 12px;border-radius:6px;border:1px solid var(--slate-red);background:var(--paper);color:var(--slate-red);cursor:pointer;">🎙 Démarrer la dictée</button>
+          <button type="button" onclick="toggleExpandTextarea('dicttext-${l.id}', this)" style="font-size:11px;font-family:'IBM Plex Mono',monospace;padding:4px 8px;border-radius:4px;border:1px solid var(--line);background:var(--concrete-2);color:var(--ink-soft);cursor:pointer;">⤢ Agrandir</button>
+        </div>
+        <textarea id="dicttext-${l.id}" placeholder="Consultez ou modifiez les notes ici — saisie manuelle libre, ou utilisez la dictée ci-dessus…">${escapeHtml(l[FIELD.notes]||"")}</textarea>
+        <div class="dictate-live" id="dictlive-${l.id}"></div>
+        <div class="dictate-panel-actions">
+          <button class="btn-cancel-cr" onclick="closeDictate('${l.id}')">Annuler</button>
+          <button class="btn-save-cr" onclick="saveDictation('${l.id}')">Enregistrer dans la fiche</button>
+        </div>
+      </div>
+
+      <select class="today-status-select" onchange="quickUpdateStatut('${l.id}', this.value)">
+        ${STATUTS.map(s=>`<option value="${s.key}" ${l[FIELD.statut]===s.key?"selected":""}>${s.key}</option>`).join("")}
+      </select>
+
+      <select class="today-status-select" style="margin-top:8px;" onchange="quickUpdateCreneau('${l.id}', this.value)">
+        ${CRENEAUX.map(c=>`<option value="${c.key}" ${(l[FIELD.creneau]||CRENEAUX[0].key)===c.key?"selected":""}>${c.icon} ${c.key} (~${c.heure})</option>`).join("")}
+      </select>
+
+      <button onclick="addToCalendar('${l.id}')" style="margin-top:8px;width:100%;padding:9px;border-radius:6px;border:1px solid var(--line);background:var(--concrete-2);color:var(--ink);font-size:12.5px;font-weight:600;cursor:pointer;">📅 Ajouter un rappel au calendrier</button>
+
+      <div class="relance-quick">
+        <span style="font-size:12px;color:var(--ink-soft);">Reporter :</span>
+        <button onclick="postpone('${l.id}',1)">+1 j</button>
+        <button onclick="postpone('${l.id}',3)">+3 j</button>
+        <button onclick="postpone('${l.id}',7)">+7 j</button>
+        <input type="date" id="relancepick-${l.id}" value="${l[FIELD.relance]||""}">
+        <button onclick="setRelanceFromPicker('${l.id}')">OK</button>
+        <button onclick="clearRelanceQuick('${l.id}')" style="color:var(--slate-red);border-color:var(--slate-red);">✕ Effacer</button>
+      </div>
+    </div>`;
+}
+
+/* =========================================================
+   VUE ADMIN — "CHANTIERS ACCEPTÉS" triés par date de chantier
+   ========================================================= */
+function renderChantiers(){
+  const f = currentFilters();
+  let list = leads.filter(l=>{
+    if(l[FIELD.statut] !== "Chantier accepté") return false;
+    if(f.commercial && l[FIELD.commercial] !== f.commercial) return false;
+    if(f.region && l[FIELD.region] !== f.region) return false;
+    if(f.search){
+      const hay = `${l[FIELD.entreprise]||""} ${l[FIELD.interlocuteur]||""} ${l[FIELD.adresse]||""} ${l[FIELD.notes]||""}`.toLowerCase();
+      if(!hay.includes(f.search)) return false;
+    }
+    return true;
+  });
+  // Toujours triés par date de chantier croissante (les leads sans date passent en dernier)
+  list.sort((a,b)=> (a[FIELD.date] || "9999-99-99").localeCompare(b[FIELD.date] || "9999-99-99"));
+
+  const wrap = $("chantiersList");
+  if(list.length === 0){
+    wrap.innerHTML = `<div class="today-empty">Aucun chantier accepté pour le moment.</div>`;
+    return;
+  }
+  wrap.innerHTML = list.map(l=>{
+    const region = l[FIELD.region] || "";
+    const accent = region === "PRGO" ? "var(--prgo)" : region === "LMPM" ? "var(--lmpm)" : "var(--graphite)";
+    return `
+    <div class="today-card" style="--cardaccent:${accent};cursor:pointer;" data-id="${l.id}" onclick="openLeadModal('${l.id}')">
+      <div class="thead">
+        <div>
+          <div class="nom">${escapeHtml(displayName(l))}</div>
+          <div class="sub">${escapeHtml(l[FIELD.adresse]||"")} · ${euro(l[FIELD.valo])}</div>
+        </div>
+        <span class="pill ${region==='PRGO'?'prgo':'lmpm'}">${region || "—"}</span>
+      </div>
+      <div class="relance-info" style="font-weight:700;color:var(--graphite);">📅 Chantier prévu le ${fmtDate(l[FIELD.date])}</div>
+      <div style="margin-top:6px;font-size:12px;color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;">
+        Commercial : ${escapeHtml(l[FIELD.commercial]||"—")}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function addDays(dateStr, n){
+  const base = dateStr && dateStr >= today() ? dateStr : today();
+  const d = new Date(base + "T00:00:00");
+  d.setDate(d.getDate() + n);
+  return d.toISOString().slice(0,10);
+}
+async function postpone(id, n){
+  const l = leads.find(x=>x.id===id);
+  const newDate = addDays(l?.[FIELD.relance], n);
+  await saveLeadQuiet(id, { [FIELD.relance]: newDate });
+  toast(`Relance reportée au ${fmtDate(newDate)}`);
+}
+async function setRelanceFromPicker(id){
+  const val = $("relancepick-"+id).value;
+  await saveLeadQuiet(id, { [FIELD.relance]: val || null });
+  toast(val ? `Relance fixée au ${fmtDate(val)}` : "Relance effacée — lead retiré de la liste du jour");
+}
+async function clearRelanceQuick(id){
+  $("relancepick-"+id).value = "";
+  await saveLeadQuiet(id, { [FIELD.relance]: null });
+  toast("Relance effacée — lead retiré de la liste du jour");
+}
+async function quickUpdateStatut(id, statut){
+  const before = leads.find(x=>x.id===id);
+  const previousStatut = before ? before[FIELD.statut] : null;
+  await saveLeadQuiet(id, { [FIELD.statut]: statut });
+  if(statut === "Chantier accepté" && previousStatut !== "Chantier accepté"){
+    sendToChantiers(id);
+  }
+  toast("Statut mis à jour");
+}
+async function quickUpdateCreneau(id, creneau){
+  await saveLeadQuiet(id, { [FIELD.creneau]: creneau || null });
+  toast(creneau ? `Créneau : ${creneau}` : "Créneau retiré");
+}
+function icsEscape(str){
+  return String(str||"").replace(/[\\,;]/g, m=>"\\"+m).replace(/\n/g, "\\n");
+}
+function icsDate(d){
+  const pad = n=> String(n).padStart(2,"0");
+  return `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
+}
+function addToCalendar(id){
+  const l = leads.find(x=>x.id===id);
+  if(!l) return;
+  const dateStr = l[FIELD.relance] || today();
+  const creneauObj = CRENEAUX.find(c=> c.key === l[FIELD.creneau]);
+  const heure = creneauObj ? creneauObj.heure : "09:00";
+  const start = new Date(`${dateStr}T${heure}:00`);
+  const end = new Date(start.getTime() + 15*60000);
+  const uid = `lead-${l.id}-${Date.now()}@crm-aerogomm`;
+  const summary = `Relance — ${displayName(l)}`;
+  const descParts = [
+    l[FIELD.tel] ? `Tél : ${l[FIELD.tel]}` : "",
+    l[FIELD.statut] ? `Statut : ${l[FIELD.statut]}` : "",
+    l[FIELD.commercial] ? `Commercial : ${l[FIELD.commercial]}` : "",
+  ].filter(Boolean);
+  const ics = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//AEROGOMM//CRM Leads//FR",
+    "CALSCALE:GREGORIAN",
+    "BEGIN:VEVENT",
+    `UID:${uid}`,
+    `DTSTAMP:${icsDate(new Date())}`,
+    `DTSTART:${icsDate(start)}`,
+    `DTEND:${icsDate(end)}`,
+    `SUMMARY:${icsEscape(summary)}`,
+    `DESCRIPTION:${icsEscape(descParts.join("\\n"))}`,
+    `LOCATION:${icsEscape(l[FIELD.adresse]||"")}`,
+    "BEGIN:VALARM",
+    "TRIGGER:-PT0M",
+    "ACTION:DISPLAY",
+    "DESCRIPTION:Rappel relance",
+    "END:VALARM",
+    "END:VEVENT",
+    "END:VCALENDAR"
+  ].join("\r\n");
+  const blob = new Blob([ics], {type:"text/calendar;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  const safeName = (l[FIELD.entreprise] || l[FIELD.interlocuteur] || "lead").replace(/[^a-z0-9]+/gi, "_");
+  a.download = `relance-${safeName}.ics`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(()=> URL.revokeObjectURL(url), 4000);
+  toast("Rappel généré — ouvrez-le pour l'ajouter à votre agenda");
+}
+// PATCH silencieux (sans fermer de modale ni toast intrusif), utilisé par la vue Aujourd'hui
+async function saveLeadQuiet(id, partialFields){
+  if(!airtableReady()) { toast("Configurez Airtable dans les Paramètres ⚙"); return; }
+  try{
+    const url = `https://api.airtable.com/v0/${cfg.base}/${encodeURIComponent(cfg.table)}/${id}`;
+    const res = await fetch(url, {
+      method:"PATCH",
+      headers:{ Authorization:`Bearer ${cfg.pat}`, "Content-Type":"application/json" },
+      body: JSON.stringify({ fields: partialFields })
+    });
+    if(!res.ok){
+      const errBody = await res.text();
+      throw new Error(errBody);
+    }
+    const updated = await res.json();
+    const idx = leads.findIndex(x=>x.id===id);
+    if(idx>-1) leads[idx] = { id, ...updated.fields };
+    render();
+  }catch(err){
+    console.error(err);
+    const msg = String(err.message||err);
+    if(msg.includes("UNKNOWN_FIELD_NAME") || msg.includes("INVALID_MULTIPLE_CHOICE_OPTIONS")){
+      alert(
+        "Échec de l'enregistrement : un champ Airtable est manquant ou mal configuré.\n\n" +
+        "Vérifiez dans votre table Airtable qu'il existe bien un champ nommé exactement " +
+        "\"" + Object.keys(partialFields)[0] + "\" (respect de la casse), du bon type " +
+        "(ex : Single select avec les 4 options de créneau écrites à l'identique)."
+      );
+    } else {
+      toast("Échec de la mise à jour");
+    }
+  }
+}
+
+/* ----- Dictée vocale (Web Speech API) ----- */
+function speechSupported(){
+  return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+}
+function toggleDictate(id){
+  const panel = $("dictpanel-"+id);
+  const isOpen = !panel.hidden;
+  // ferme tout autre panneau ouvert (et arrête sa dictée si elle était active)
+  document.querySelectorAll(".dictate-panel").forEach(p=>{
+    if(p.id !== "dictpanel-"+id){
+      const otherId = p.id.replace("dictpanel-","");
+      if(recordingLeadId === otherId) stopRecording(otherId);
+      p.hidden = true;
+    }
+  });
+  if(isOpen){
+    closeDictate(id);
+    return;
+  }
+  panel.hidden = false;
+  // le panneau s'ouvre en simple consultation/saisie manuelle — l'enregistrement se démarre via son propre bouton
+}
+function normalizeForDedup(s){
+  return s.toLowerCase().replace(/[.,!?;:…]/g,"").replace(/\s+/g," ").trim();
+}
+function startRecording(id){
+  if(!speechSupported()){
+    toast("La dictée vocale n'est pas prise en charge sur ce navigateur (utilisez Chrome sur Android).");
+    return;
+  }
+  if(recognition){ try{ recognition.stop(); }catch(e){} }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang = "fr-FR";
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recordingLeadId = id;
+  dictationBuffer = $("dicttext-"+id).value || "";
+  if(dictationBuffer && !dictationBuffer.endsWith("\n")) dictationBuffer += "\n";
+  const stamp = new Date().toLocaleString("fr-FR", {day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+  dictationBuffer += `— Compte-rendu du ${stamp} —\n`;
+
+  recognition.onresult = (e)=>{
+    let interim = "";
+    for(let i=e.resultIndex; i<e.results.length; i++){
+      const res = e.results[i];
+      if(res.isFinal){
+        const chunk = res[0].transcript.trim();
+        if(chunk){
+          const normChunk = normalizeForDedup(chunk);
+          const tail = normalizeForDedup(dictationBuffer.slice(-250));
+          const isDuplicate = normChunk.length > 2 && tail.includes(normChunk);
+          if(!isDuplicate){
+            dictationBuffer += chunk + " ";
+            $("dicttext-"+id).value = dictationBuffer;
+          }
+        }
+      } else {
+        interim += res[0].transcript;
+      }
+    }
+    const live = $("dictlive-"+id);
+    if(live) live.textContent = interim ? "… " + interim : "";
+  };
+  recognition.onerror = (e)=>{
+    console.error("Speech error", e.error);
+    if(e.error === "not-allowed"){
+      toast("Micro refusé — autorisez l'accès au microphone dans le navigateur.");
+    }
+    recordingLeadId = null;
+    setRecordingButtonState(id, false);
+  };
+  recognition.onend = ()=>{
+    // Pas de redémarrage automatique : source des répétitions constatées sur mobile.
+    // La dictée s'arrête proprement ; il suffit de ré-appuyer sur "Démarrer la dictée" pour reprendre.
+    const wasActive = recordingLeadId === id;
+    recordingLeadId = null;
+    setRecordingButtonState(id, false);
+    if(wasActive){
+      toast("🎙 Micro coupé — appuyez sur \"Démarrer la dictée\" pour reprendre");
+    }
+  };
+  try{
+    recognition.start();
+    setRecordingButtonState(id, true);
+  }catch(e){
+    console.error(e);
+  }
+}
+function setRecordingButtonState(id, isRecording){
+  const btn = $("recbtn-"+id);
+  if(!btn) return;
+  btn.textContent = isRecording ? "⏹ Arrêter la dictée" : "🎙 Démarrer la dictée";
+  btn.style.background = isRecording ? "var(--slate-red)" : "var(--paper)";
+  btn.style.color = isRecording ? "#fff" : "var(--slate-red)";
+}
+function toggleRecording(id){
+  if(recordingLeadId === id){
+    stopRecording(id);
+  } else {
+    startRecording(id);
+  }
+}
+function stopRecording(id){
+  recordingLeadId = null;
+  if(recognition){ try{ recognition.stop(); }catch(e){} }
+  setRecordingButtonState(id, false);
+  const live = $("dictlive-"+id);
+  if(live) live.textContent = "";
+}
+function closeDictate(id){
+  stopRecording(id);
+  const panel = $("dictpanel-"+id);
+  if(panel) panel.hidden = true;
+  const ta = $("dicttext-"+id);
+  if(ta) ta.classList.remove("expanded");
+}
+async function saveDictation(id){
+  stopRecording(id);
+  const text = $("dicttext-"+id).value;
+  await saveLeadQuiet(id, { [FIELD.notes]: text });
+  toast("Compte-rendu enregistré sur la fiche");
+  closeDictate(id);
+}
+
+function setView(view){
+  currentView = view;
+  $("board").style.display = view === "kanban" ? "flex" : "none";
+  $("todayView").style.display = view === "today" ? "block" : "none";
+  $("chantiersView").style.display = view === "chantiers" ? "block" : "none";
+  $("btnToggleView").textContent = view === "kanban" ? "📱 Aujourd'hui" : "🗂 Vue Kanban";
+  render();
+}
+$("btnToggleView").addEventListener("click", ()=> setView(currentView === "kanban" ? "today" : "kanban"));
+$("btnChantiers").addEventListener("click", ()=> setView(currentView === "chantiers" ? "kanban" : "chantiers"));
+
+/* =========================================================
+   MODAL LEAD
+   ========================================================= */
+function openLeadModal(id){
+  editingId = id || null;
+  const l = id ? leads.find(x=>x.id===id) : null;
+  $("leadModalTitle").textContent = l ? "Modifier le lead" : "Nouveau lead";
+  $("leadModalCreation").textContent = l
+    ? `Créé le ${fmtDateTime(l[FIELD.creation])}`
+    : `Sera créé le ${fmtDateTime(new Date().toISOString())}`;
+  $("f_entreprise").value = l?.[FIELD.entreprise] || "";
+  $("f_interlocuteur").value = l?.[FIELD.interlocuteur] || "";
+  $("f_telephone").value = l?.[FIELD.tel] || "";
+  $("f_email").value = l?.[FIELD.email] || "";
+  $("f_adresse").value = l?.[FIELD.adresse] || "";
+  $("f_region").value = l?.[FIELD.region] || "PRGO";
+  updateCommercialOptionsForRegion($("f_region").value, l?.[FIELD.commercial]);
+  if(!l) $("f_commercial").value = (cfg.commercials.find(c=>c.region === $("f_region").value) || {}).name || "";
+  if(session && session.type === "commercial"){
+    $("f_commercial").value = session.name;
+    $("f_commercial").disabled = true;
+  } else {
+    $("f_commercial").disabled = false;
+  }
+  $("f_statut").value = l?.[FIELD.statut] || STATUTS[0].key;
+  $("f_valorisation").value = l?.[FIELD.valo] ?? "";
+  $("f_date").value = l?.[FIELD.date] || "";
+  $("f_relance").value = l?.[FIELD.relance] || "";
+  $("f_creneau").value = l?.[FIELD.creneau] || CRENEAUX[0].key;
+  $("f_par_lucas").checked = !!l?.[FIELD.parLucas];
+  parLucasWasChecked = $("f_par_lucas").checked;
+  $("f_notes").value = l?.[FIELD.notes] || "";
+  $("f_notes").classList.remove("expanded");
+  $("btnExpandNotes").textContent = "⤢ Agrandir";
+  const isAdminSession = !session || session.type === "admin";
+  $("btnDelete").style.display = (l && isAdminSession) ? "inline-block" : "none";
+  $("leadOverlay").classList.add("open");
+}
+function closeLeadModal(){
+  $("leadOverlay").classList.remove("open");
+  editingId = null;
+}
+function readLeadForm(){
+  return {
+    [FIELD.entreprise]: $("f_entreprise").value.trim(),
+    [FIELD.interlocuteur]: $("f_interlocuteur").value.trim(),
+    [FIELD.tel]: $("f_telephone").value.trim(),
+    [FIELD.email]: $("f_email").value.trim(),
+    [FIELD.adresse]: $("f_adresse").value.trim(),
+    [FIELD.region]: $("f_region").value,
+    [FIELD.commercial]: $("f_commercial").value,
+    [FIELD.statut]: $("f_statut").value,
+    [FIELD.valo]: $("f_valorisation").value ? Number($("f_valorisation").value.replace(",",".")) : null,
+    [FIELD.date]: $("f_date").value || null,
+    [FIELD.relance]: $("f_relance").value || null,
+    [FIELD.creneau]: $("f_creneau").value || null,
+    [FIELD.parLucas]: $("f_par_lucas").checked,
+    [FIELD.notes]: $("f_notes").value.trim(),
+  };
+}
+
+$("btnNew").addEventListener("click", ()=> openLeadModal(null));
+$("closeLeadModal").addEventListener("click", closeLeadModal);
+$("btnCancel").addEventListener("click", closeLeadModal);
+$("leadOverlay").addEventListener("click", (e)=>{ if(e.target.id==="leadOverlay") closeLeadModal(); });
+$("btnSave").addEventListener("click", async ()=>{
+  if(!airtableReady()){ toast("Configurez Airtable dans les Paramètres ⚙"); return; }
+  const payload = readLeadForm();
+  if(!payload[FIELD.entreprise] && !payload[FIELD.interlocuteur]){ toast("Renseignez au moins le nom de l'entreprise ou de l'interlocuteur"); return; }
+  if(payload[FIELD.parLucas] && !parLucasWasChecked){
+    payload[FIELD.relance] = today(); // nouveau contact Lucas → relance immédiate du jour (une seule fois)
+    payload[FIELD.creneau] = CRENEAUX[0].key; // toujours "Début de matinée"
+  }
+  const previousLead = editingId ? leads.find(x=>x.id===editingId) : null;
+  const previousStatut = previousLead ? previousLead[FIELD.statut] : null;
+  const saved = await saveLead(payload, editingId);
+  if(saved && payload[FIELD.statut] === "Chantier accepté" && previousStatut !== "Chantier accepté"){
+    sendToChantiers(saved.id);
+  }
+});
+$("btnDelete").addEventListener("click", ()=>{
+  if(editingId) deleteLead(editingId);
+});
+$("f_par_lucas").addEventListener("change", ()=>{
+  if($("f_par_lucas").checked){
+    $("f_creneau").value = CRENEAUX[0].key;
+  }
+});
+$("btnClearRelance").addEventListener("click", ()=>{
+  $("f_relance").value = "";
+});
+function toggleExpandTextarea(textareaId, btnEl){
+  const ta = $(textareaId);
+  const isExpanded = ta.classList.toggle("expanded");
+  btnEl.textContent = isExpanded ? "⤡ Réduire" : "⤢ Agrandir";
+}
+$("btnExpandNotes").addEventListener("click", (e)=> toggleExpandTextarea("f_notes", e.currentTarget));
+$("btnInsertDate").addEventListener("click", ()=>{
+  const ta = $("f_notes");
+  const stamp = new Date().toLocaleDateString("fr-FR", {day:"2-digit", month:"2-digit", year:"numeric"});
+  const insertion = `${stamp} — `;
+  const start = ta.selectionStart ?? ta.value.length;
+  const end = ta.selectionEnd ?? ta.value.length;
+  const before = ta.value.slice(0, start);
+  const after = ta.value.slice(end);
+  const needsNewlineBefore = before.length > 0 && !before.endsWith("\n");
+  const prefix = needsNewlineBefore ? "\n" : "";
+  const newValue = before + prefix + insertion + after;
+  ta.value = newValue;
+  const cursorPos = (before + prefix + insertion).length;
+  ta.focus();
+  ta.setSelectionRange(cursorPos, cursorPos);
+});
+$("f_region").addEventListener("change", ()=>{
+  updateCommercialOptionsForRegion($("f_region").value);
+  if(session && session.type === "commercial"){
+    $("f_commercial").value = session.name;
+    $("f_commercial").disabled = true;
+  }
+});
+
+/* =========================================================
+   MODAL SETTINGS
+   ========================================================= */
+function renderCommercialsList(){
+  $("commercialsList").innerHTML = tempCommercials.map((c, i)=>`
+    <div class="commercial-row" data-idx="${i}">
+      <input type="text" class="com-name" value="${escapeHtml(c.name)}" placeholder="Nom du commercial">
+      <select class="com-region">
+        <option value="PRGO" ${c.region==='PRGO'?'selected':''}>PRGO</option>
+        <option value="LMPM" ${c.region==='LMPM'?'selected':''}>LMPM</option>
+      </select>
+      <input type="text" class="com-code" value="${escapeHtml(c.code||'')}" placeholder="Code d'accès" style="flex:1;">
+      <button type="button" class="btn-remove-com" data-idx="${i}" title="Retirer">✕</button>
+    </div>`).join("");
+
+  $("commercialsList").querySelectorAll(".com-name").forEach((el,i)=>{
+    el.addEventListener("input", ()=> tempCommercials[i].name = el.value);
+  });
+  $("commercialsList").querySelectorAll(".com-region").forEach((el,i)=>{
+    el.addEventListener("change", ()=> tempCommercials[i].region = el.value);
+  });
+  $("commercialsList").querySelectorAll(".com-code").forEach((el,i)=>{
+    el.addEventListener("input", ()=> tempCommercials[i].code = el.value.trim());
+  });
+  $("commercialsList").querySelectorAll(".btn-remove-com").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      tempCommercials.splice(Number(btn.dataset.idx), 1);
+      renderCommercialsList();
+    });
+  });
+}
+function openSettingsModal(){
+  $("s_pat").value = cfg.pat || "";
+  $("s_base").value = cfg.base || "";
+  $("s_table").value = cfg.table || "Leads";
+  $("s_chantiers_table").value = cfg.chantiersTable || "";
+  $("s_admin_code").value = cfg.adminCode || "";
+  $("s_sound_enabled").checked = cfg.soundEnabled !== false;
+  tempCommercials = cfg.commercials.map(c=>({...c}));
+  renderCommercialsList();
+  $("settingsOverlay").classList.add("open");
+}
+function closeSettingsModal(){ $("settingsOverlay").classList.remove("open"); }
+$("btnSettings").addEventListener("click", openSettingsModal);
+$("closeSettingsModal").addEventListener("click", closeSettingsModal);
+$("btnCancelSettings").addEventListener("click", closeSettingsModal);
+$("btnAddCommercial").addEventListener("click", ()=>{
+  tempCommercials.push({name:"", region:"PRGO"});
+  renderCommercialsList();
+});
+$("settingsOverlay").addEventListener("click", (e)=>{ if(e.target.id==="settingsOverlay") closeSettingsModal(); });
+$("btnSaveSettings").addEventListener("click", ()=>{
+  cfg.pat = $("s_pat").value.trim();
+  cfg.base = $("s_base").value.trim();
+  cfg.table = $("s_table").value.trim() || "Leads";
+  cfg.chantiersTable = $("s_chantiers_table").value.trim() || "";
+  cfg.adminCode = $("s_admin_code").value.trim() || null;
+  cfg.soundEnabled = $("s_sound_enabled").checked;
+  const cleaned = tempCommercials.map(c=>({name:c.name.trim(), region:c.region, code:(c.code||"").trim()})).filter(c=>c.name);
+  cfg.commercials = cleaned.length ? cleaned : cfg.commercials;
+  localStorage.setItem("crmLeadsConfig", JSON.stringify(cfg));
+  populateCommercialSelects();
+  closeSettingsModal();
+  checkSession();
+  if(!codesConfigured() || session){
+    fetchLeads();
+  }
+});
+
+/* =========================================================
+   FILTRES
+   ========================================================= */
+["commercialFilter","regionFilter","sortBy"].forEach(id=>{
+  $(id).addEventListener("change", render);
+});
+$("searchBox").addEventListener("input", render);
+
+/* =========================================================
+   INIT
+   ========================================================= */
+populateCommercialSelects();
+if(window.innerWidth < 700){
+  setView("today");
+} else {
+  setView("kanban");
+}
+checkSession();
+if(!airtableReady()){
+  setTimeout(()=>{ toast("Bienvenue — configurez Airtable via ⚙ pour commencer"); openSettingsModal(); }, 400);
+}
+if(!codesConfigured() || session){
+  fetchLeads();
+}
+
+/* =========================================================
+   SYNCHRONISATION AUTOMATIQUE — toutes les 5 minutes
+   ========================================================= */
+const SYNC_INTERVAL_MS = 5 * 60 * 1000;
+setInterval(()=>{
+  if(!airtableReady()) return;
+  if(codesConfigured() && !session) return; // pas encore connecté
+  if(recordingLeadId) return; // ne pas interrompre une dictée vocale en cours
+  if(document.querySelector(".dictate-panel:not([hidden])")) return; // compte-rendu en cours de rédaction
+  fetchLeads();
+}, SYNC_INTERVAL_MS);
+</script>
+</body>
+</html>
