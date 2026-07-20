@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aujourd'hui — Tous dossiers</title>
+<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAEFElEQVR4nMWXz2ucZRDHvzPP877vbrJptuaXgo2pPyGVxiJUhAoitL2UXHTNpUKlQemhKVj/hh6kBEwPVRA86MkakCAIeunFixdJIEVRbDC2ysaEpm2yu3nfZ8bDu2+y2c1m33QDDry8y7vDzOeZZ2aeeQgACgU1N26QG3n/9hB19k2oyhnVaIhULQBCe6JKFBHZBSL+VteWpmY/PbyQ+KRN5xeLb5PXeY2N3y9RCSphm363C7EHtlmI2yhquHZx9lr/V4WCGgKAoxP/vmkz+a8lWodEFUdEDFC7K68TVVUVtoFh24GofO+tuaneaTrywfIhIzTH7HVLVBEiMvvruAHDsQ1YJFx1rEfZhHLZ+l15icpNnVPN00pa6RKRkags1u/Km1AuW2IelbCkcdjrleO3kzoHTayrAjWqMFUS1QYIlrCkxDxqAR1UCamemQgII0AB5DIE1fibiEI01k7sJr+JAMNbumtlhQLwbT0EUZzkOmiBxrATAZEDujsJV9/N4ekBAyeAYeDHX0JcuP4AuQxBqstlBu6vKybP53DqJR+RAJaBv5YFH37+EEurAq8BAgDI2J1CyQSsVxQnR3y8+oK37b/Tx3xcOduJjWj7VjABo8cDdHdsfRzIM14b9vDlzTIOegTXAADsCFArIoBovHoA6AwI509mm+onq3QSR6aVtARgBlS2VqtVqAbHiJMu0SOKo9I2QCKiVYO6u+HGfd4HAOatGkndH1OC7AqQ2Hiwrri7Ijg8wLizLE27DCHe++4OwmNdKRKgJUCVYKHo8NkPJUyc6cDVb9bhNWnWce0DJ4Y9nHsj0z5AstdHBi0+Hu8CEfDJha5Uhp1UO2E7AImYdNF8JNkVQKpbcGsxwhc3y3jvVBbXvyvBmp1zLG5gwCvPexg7EbQPkGR8Xzfj9DEfvQcYo8eDppWQtPDHD3J8NrQNUH33HWC8/qIPIE6wNOIkHUGqMly6L5j/M8LLz3iYvR2lisCzT6Sba1KV4dKq4PufN/BUn8HMTxXYXcowyYHn9gMgKcPhQxZX3skBAD46l0tleF/KUDV+kpONsFUZu0niV9H6bGgKoAp4Ng5rYiOZetKICGCAJoPINgB19VORKpDxgF/vODwsK3KZvU/obIByqLi16BB4zSDU0cil5T+IvSGVDdSujwiohIqhfoMne0zqugawqfvPPcHvf0cIPKoDUCX2oRIuWBWZMUH2UlSuuNqxXBUIPMJCUfDbXbfnCACANUDGr3cOqKoYL2uiUmWm5cWEaA8zQL1oY9I2XEzmJ3sWITLONktsfaMqrnbHVKtz4aM8dWFXFcfWN2yzBJHx+cmeRS4U1MxN9U670soYYIo2yBtif5/vhQCxTzbIG8AUXWllbG6qd3rzcvp/Xs//Azqy8bOcRbCLAAAAAElFTkSuQmCC">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<link rel="manifest" href="data:application/json;base64,eyJuYW1lIjogIlRvdXMgRG9zc2llcnMgLSBBRVJPR09NTSIsICJzaG9ydF9uYW1lIjogIlRvdXMgRG9zc2llcnMiLCAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwgInN0YXJ0X3VybCI6ICIuIiwgImJhY2tncm91bmRfY29sb3IiOiAiI2Y1ZjZmOCIsICJ0aGVtZV9jb2xvciI6ICIjMmY2ZmVkIiwgImljb25zIjogW3sic3JjIjogImRhdGE6aW1hZ2UvcG5nO2Jhc2U2NCxpVkJPUncwS0dnb0FBQUFOU1VoRVVnQUFBZ0FBQUFJQUNBWUFBQUQwZU5UNkFBQU83VWxFUVZSNG5PM2RVWExiTmhTR1VhYVRGYmdMYVhiV0xNWGRtYnVRWmd2dFE0YXA0a2l5U0lIQUJmOXpIdFBZUThNVTdpZElWVDR0bFBUSG4vLzhPL29hQUZyNCs2L2ZQNDIrQm43bGx6S0lBUS93blVBWXc2SjNZTmdEYkNNS2ptZUJEMkRnQTdRbENOcXpvQTBZK0FCOUNZTG5XY0NkREgyQUdzVEFQaFp0QTBNZm9EWXg4RGdMOVFGREgyQk9ZdUEraTNPRHdROXdEa0xnT290eXdkQUhPRGN4OEQ4THNSajhBR21FUUhnQUdQd0EyWkpESVBJSE4vZ0J1SlFZQWxFL3NNRVB3RDFKSVJEeGd4cjhBR3lSRUFLL2piNkFveG4rQUd5Vk1EdE9XemdKdnp3QWpuZlcwNERUL1ZBR1B3QkhPRnNJbk9vbEFNTWZnS09jYmNhY29tYk85a3NCb0xZem5BWk1md0pnK0FQUTJ4bG16OVFCY0laZkFBQnptbjBHVFhtRU1mdWlBM0F1TTc0a01OMEpnT0VQUURVenpxYXBBbURHQlFZZ3cyd3phb29qaTlrV0ZZQnNNN3drVVA0RXdQQUhZRFl6eks3U0FURERBZ0xBTmRWbldOa0FxTDV3QVBDUnlyT3NaQUJVWGpBQTJLTHFUQ3NYQUZVWENnRDJxampiU2dWQXhRVUNnQmFxemJneUFWQnRZUUNndFVxenJrUUFWRm9RQURoU2xaazNQQUNxTEFRQTlGSmg5ZzBOZ0FvTEFBQWpqSjZCd3dKZzlBOE9BS09ObklWREFzRHdCNER2UnMzRTdnRmcrQVBBejBiTXhxNEJZUGdEd0hXOVoyUzNBREQ4QWVDK25yT3lTd0FZL2dEd21GNHpjL2puQUFBQS9SMGVBSjc5QThBMlBXYm5vUUZnK0FQQVBrZlAwTU1Dd1BBSGdPY2NPVXU5QndBQUFoMFNBSjc5QTBBYlI4M1U1Z0ZnK0FOQVcwZk0xcVlCWVBnRHdERmF6MWp2QVFDQVFNMEN3TE4vQURoV3kxbmJKQUFNZndEb285WE05UklBQUFSNk9nQTgrd2VBdmxyTVhpY0FBQkRvcVFEdzdCOEF4bmgyQnU4T0FNTWZBTVo2WmhaN0NRQUFBdTBLQU0vK0FhQ0d2VFBaQ1FBQUJOb2NBSjc5QTBBdGUyYXpFd0FBQ0xRcEFEejdCNENhdHM1b0p3QUFFT2poQVBEc0h3QnEyektyblFBQVFLQ0hBc0N6ZndDWXc2TXoyd2tBQUFRU0FBQVE2TU1BY1B3UEFITjVaSFk3QVFDQVFIY0R3TE4vQUpqVFJ6UGNDUUFBQkJJQUFCRG9aZ0E0L2dlQXVkMmI1VTRBQUNDUUFBQ0FRRmNEd1BFL0FKekRyWm51QkFBQUFna0FBQWowU3dBNC9nZUFjN2syMjUwQUFFQWdBUUFBZ1FRQUFBVDZLUUM4L2c4QTUvUit4anNCQUlCQUFnQUFBZ2tBQUFqMEl3QzgvZzhBNTNZNTY1MEFBRUFnQVFBQWdRUUFBQVFTQUFBUTZMZGw4UVpBQUVpeHpud25BQUFRU0FBQVFDQUJBQUNCQkFBQUJCSUFBQkJJQUFCQUlBRUFBSUUrK1F3QUFNampCQUFBQWdrQUFBZ2tBQUFna0FBQWdFQUNBQUFDQ1FBQUNDUUFBQ0NRQUFDQVFBSUFBQUlKQUFBSTlIbjBCVENmdDllWDBaY3d4SmV2MzBaZkFnOXlqOExIQkFBUFNkMVFZU2FYajFNeHdFY0VBRGNaK2pBdk1jQkh2QWVBcXd4L09BK1BaNjV4QXNCUGJCUndUdXRqMjJrQUt5Y0EvR0Q0dy9sNW5MTVNBQ3pMWWxPQUpCN3ZMSXNBWUxFWlFDS1Bld1JBT0pzQTVQTDR6eVlBZ25ud0EvYUJYQUlBQUFJSmdGQ3FIMWpaRHpJSmdFQWU3TUI3OW9VOEFnQUFBZ2tBZUpCblNIUHdlNExIQ0lBd05rZmdGdnRERmdFQUc5Z2dhL1A3Z2NjSkFBQUlKQUNDZUhiVWhuV3N5ZStsRGV1WVF3REFEamJKV3Z3K1lEc0JBRHNaT2pYNFBjQStuMGRmQU14c0hUNWZ2bjRiZkNWNURINTRqZ0NBQm9SQVB3WS90Q0VBb0NIRENaaUY5d0FBUUNBQkFBQ0JCQUFBQkJJQUFCQklBQUJBSUFFQUFJRUVBQUFFRWdBQUVFZ0FBRUFnQVFBQWdRUUFBQVFTQUFBUVNBQUFRQ0FCQUFDQkJBQUFCQklBQUJCSUFBQkFJQUVBQUlFRUFBQUVFZ0FBRUVnQUFFQWdBUUFBZ1FRQUFBUVNBQUFRU0FBQVFDQUJBQUNCQkFBQUJCSUFBQkJJQUFCQUlBRUFBSUVFQUFBRUVnQUFFRWdBQUVBZ0FRQUFnUVFBQUFRU0FBQVFTQUFBUUNBQkFBQ0JCQUFBQkJJQUFCQklBQUJBSUFFQUFJRUVBQUFFRWdBQUVFZ0FBRUFnQVFBQWdRUUFBQVFTQUFBUVNBQUFRQ0FCQUFDQkJBQUFCQklBQUJCSUFBQkFJQUVBQUlFRUFBQUVFZ0FBRUVnQUFFQWdBUUFBZ1FRQUFBUVNBQUFRU0FBQVFDQUJBQUNCQkFBQUJCSUFBQkJJQUFCQUlBRUFBSUVFQUFBRUVnQUFFRWdBQUVBZ0FRQUFnUVFBQUFRU0FBQVFTQUFBUUNBQkFBQ0JCQUFBQkJJQUFCQklBQUJBSUFFQUFJRUVBQUFFRWdBQUVFZ0FBRUFnQVFBQWdRUUFBQVQ2UFBvQ1lQWGw2N2RmL3V6dDlXWEFsUUNjbndCZ3VHdUQvLzEvRXdJQWJRa0FocmszK0cvOVhTRUEwSVlBWUlndHcvLzkxN1dLZ0wzWEFJOFNyRlRtVFlCRU12enB3WDFHWlFLQTdwN2RGRWQvUFd6aGZxTXFBVUFVbXpFanVPK29TQURRVmF1TmNNLzNzUWt6a3Z1UGFnUUFBQVFTQUFBUVNBQUFRQ0FCQUFDQkJBQmR0ZnBnbEQzZng0ZXlNSkw3ajJvRUFGRnN3b3pndnFNaUFVQjN6MjZHbzc4ZXRuQy9VWlVBSUpKTm1SN2NaMVRtSHdOaWlMZlhsMTBmak5KeVE3VTVBOGtFQU1Pc0EvaVJFRENzQWRvU0FBeDNMd1FNZm9CakNBREtNT3dCK3ZFbVFBQUlKQUFBSUpBQUFJQkFBZ0FBQWdrQUFBZ2tBQUFna0FBQWdFQUNBQUFDQ1FBQUNDUUFBQ0NRQUFDQVFBSUFBQUlKQUFBSUpBQUFJSkFBQUlCQUFnQUFBZ2tBQUFna0FBQWdrQUFBZ0VBQ0FBQUNDUUFBQ0NRQUFDQ1FBQUNBUUFJQUFBSUpBQUFJSkFBQUlKQUFBSUJBQWdBQUFna0FBQWdrQUFBZ2tBQUFnRUFDQUFBQ0NRQUFDQ1FBQUNDUUFBQ0FRSjlIWHdDc3Zuejk5c3VmdmIyK0RMZ1NnUE1UQUF4M2JmQy8vMjlDQUtBdEFjQXc5d2IvcmI4ckJBRGFFQUFNc1dYNHYvKzZWaEd3OXhyZ1VZS1Z5cndKa0VpR1B6MjR6NmhNQU5EZHM1dmk2SytITGR4dlZDVUFpR0l6WmdUM0hSVUpBTHBxdFJIdStUNDJZVVp5LzFHTkFBQ0FRQUlBQUFJSkFBQUlKQUFBSUpBQW9LdFdINHl5NS92NFVCWkdjdjlSalFBZ2lrMllFZHgzVkNRQTZPN1p6WEQwMThNVzdqZXFFZ0JFc2luVGcvdU15dnhqUUF6eDl2cXk2NE5SV202b05tY2dtUUJnbUhVQVB4SUNoalZBV3dLQTRlNkZnTUVQY0F3QlFCbUdQVUEvM2dRSUFJRUVBQUFFRWdBQUVFZ0FBRUFnQVFBQWdRUUFBQVFTQUFBUVNBQUFRQ0FCQUFDQkJBQUFCQklBQUJCSUFBQkFJQUVBQUlFRUFBQUVFZ0FBRUVnQUFFQWdBUUFBZ1FRQUFBUVNBQUFRU0FBQVFDQUJBQUNCQkFBQUJCSUFBQkJJQUFCQUlBRUFBSUVFQUFBRUVnQUFFRWdBQUVBZ0FRQUFnUVFBQUFRU0FBQVFTQUFBUUNBQkFBQ0JCQUFBQkJJQUFCRG84K2dMZ05XWHI5OSsrYk8zMTVjQlZ3SndmZ0tBNGE0Ti92Zi9UUWdBdENVQUdPYmU0TC8xZDRVQVFCc0NnQ0cyRFAvM1g5Y3FBdlplQXp4S3NGS1pOd0VTeWZDbkIvY1psUWtBdW50MlV4ejk5YkNGKzQycUJBQlJiTWFNNEw2aklnRkFWNjAyd2ozZnh5Yk1TTzQvcWhFQUFCQklBQUJBSUFFQUFJRUVBQUFFRWdCMDFlcURVZlo4SHgvS3dranVQNm9SQUVTeENUT0MrNDZLQkFEZFBic1pqdjU2Mk1MOVJsVUNnRWcyWlhwd24xR1pmd3lJSWQ1ZVgzWjlNRXJMRGRYbURDUVRBQXl6RHVCSFFzQ3dCbWhMQUREY3ZSQXcrQUdPSVFBb3c3QUg2TWViQUFFZ2tBQUFnRUFDQUFBQ0NRQUFDQ1FBQUNDUUFBQ0FRQUlBQUFJSkFBQUlKQUFBSUpBQUFJQkFBZ0FBQWdrQUFBZ2tBQUFna0FBQWdFQUNBQUFDQ1FBQUNDUUFBQ0NRQUFDQVFBSUFBQUlKQUFBSUpBQUFJSkFBQUlCQUFnQUFBZ2tBQUFna0FBQWdrQUFBZ0VBQ0FBQUNDUUFBQ0NRQUFDQ1FBQUNBUUFJQUFBSUpBQUFJSkFBQUlKQUFBSUJBQWdBQUFna0FBQWdrQUFBZ2tBQUFnRUFDQUFBQ0NRQUFDQ1FBQUNDUUFBQ0FRQUlBQUFJSkFBQUlKQUFBSUpBQUFJQkFBZ0FBQWdrQUFBZ2tBQUFna0FBQWdFQUNBQUFDQ1FBQUNDUUFnbno1K20zMEpRREYyU2R5Q0FBQUNDUUFBQ0NRQUFqamVBKzR4ZjZRUlFBQVFDQUJBQUNCQkVBZ3gzekFlL2FGUEFJZ2xBYzdzTElmWlBydDc3OSsvelQ2SWdDQWZ2Nys2L2RQVGdDQ3FYN0FQcEJMQUlUejRJZGNIdi9aQkFBMkFRamtjWThBWUZrV213RWs4WGhuV1FRQUYyd0tjSDRlNTZ3K2o3NEFhbGszaDdmWGw4RlhBclJrOFBPZUV3Q3VzbG5BZVhnOGM4MlB6d0Q0NDg5Ly9oMTVJZFRtUkFEbVl1aHp5L3I1UDE0QzRDR1htNGtZZ0pvTWZiWVFBR3hta3dHWW4vY0FBRUFnQVFBQWdYNEVnSDhVQ0FETzdYTFdPd0VBZ0VBQ0FBQUNDUUFBQ1BSVEFIZ2ZBQUNjMC9zWjd3UUFBQUlKQUFBSUpBQUFJTkF2QWVCOUFBQndMdGRtdXhNQUFBZ2tBQUFnME5VQThESUFBSnpEclpudUJBQUFBZ2tBQUFoME13QzhEQUFBYzdzM3k1MEFBRUFnQVFBQWdlNEdnSmNCQUdCT0g4MXdKd0FBRU9qREFIQUtBQUJ6ZVdSMk93RUFnRUFDQUFBQ1BSUUFYZ1lBZ0RrOE9yT2RBQUJBb0ljRHdDa0FBTlMyWlZZN0FRQ0FRSnNDd0NrQUFOUzBkVVk3QVFDQVFKc0R3Q2tBQU5TeVp6WTdBUUNBUUxzQ3dDa0FBTlN3ZHlZN0FRQ0FRTHNEd0NrQUFJejF6Q3grNmdSQUJBREFHTS9PWUM4QkFFQ2dwd1BBS1FBQTlOVmk5am9CQUlCQVRRTEFLUUFBOU5GcTVqWTdBUkFCQUhDc2xyUFdTd0FBRUtocEFEZ0ZBSUJqdEo2eHpVOEFSQUFBdEhYRWJEM2tKUUFSQUFCdEhEVlR2UWNBQUFJZEZnQk9BUURnT1VmTzBrTlBBRVFBQU94ejlBdzkvQ1VBRVFBQTIvU1luZDREQUFDQnVnU0FVd0FBZUV5dm1kbnRCRUFFQU1COVBXZGwxNWNBUkFBQVhOZDdSblovRDRBSUFJQ2ZqWmlOUTk0RUtBSUE0THRSTTNIWS93VWdBZ0JJTjNJV0R2M2ZBRVVBQUtsR3o4RGhud013ZWdFQW9MY0tzMjk0QUN4TGpZVUFnQjZxekx3U0FiQXNkUllFQUk1U2FkYVZDWUJscWJVd0FOQlN0UmxYS2dDV3BkNENBY0N6S3M2MmNnR3dMRFVYQ2dEMnFEclRTZ2JBc3RSZE1BQjRWT1ZaVmpZQWxxWDJ3Z0hBUGRWbldPa0FXSmI2Q3dnQTc4MHd1OHBmNEtVLy92em4zOUhYQUFDM3pERDRWK1ZQQUM3TnRMQUFaSmx0UmswVkFNc3kzd0lEY0g0enpxYnBMdmlTbHdRQUdHbkd3YithN2dUZzBzd0xEOERjWnA5QlV3ZkFzc3ovQ3dCZ1BtZVlQZFAvQUplOEpBREFrYzR3K0ZmVG53QmNPdE12Qm9CYXpqWmpUdlhEWEhJYUFFQUxaeHY4cTFQK1VKZUVBQUI3bkhYd3IwNzFFc0ExWi84RkF0QmV3dXc0L1E5NHlXa0FBUGNrRFA1VnpBOTZTUWdBY0NscDhLL2lmdUJMUWdBZ1crTGdYOFgrNEplRUFFQ1c1TUcvaWwrQVMwSUE0TndNL3Y5WmlCdkVBTUE1R1ByWFdaUVBDQUdBT1JuODkxbWNEY1FBUUcyRy91TXMxRTVpQUtBR1EzOGZpOWFBR0FEb3k5Qi9uZ1U4Z0NBQWFNdkFiOCtDZGlBSUFMWXg4STluZ1FjUkJRRGZHZlpqV1BTaUJBSndGZ1o4VGY4Qk1RbGtTWXlnVXRJQUFBQUFTVVZPUks1Q1lJST0iLCAic2l6ZXMiOiAiNTEyeDUxMiIsICJ0eXBlIjogImltYWdlL3BuZyIsICJwdXJwb3NlIjogImFueSBtYXNrYWJsZSJ9XX0=">
+<meta name="theme-color" content="#2f6fed">
+
+<style>
+  :root{
+    --bg:#f5f6f8; --card:#ffffff; --ink:#1f2430; --muted:#6b7280;
+    --accent:#2f6fed; --green:#1aa06d; --orange:#e08a1e; --red:#d94f4f; --pink:#c14f8f;
+    --border:#e5e7eb;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);}
+  header{background:var(--ink);color:#fff;padding:16px 18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+  header h1{font-size:17px;margin:0;font-weight:600;}
+  nav{display:flex;gap:6px;padding:10px 14px;background:#fff;border-bottom:1px solid var(--border);overflow-x:auto;}
+  nav button{border:none;background:transparent;padding:9px 14px;border-radius:8px;font-size:13.5px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap;}
+  nav button.active{background:var(--accent);color:#fff;}
+  main{padding:14px;max-width:900px;margin:0 auto;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;}
+  .card-title{font-size:14px;font-weight:700;margin:0 0 10px 0;}
+  .grid4{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:14px;}
+  @media(max-width:700px){.grid4{grid-template-columns:repeat(3,1fr);}}
+  .metric{background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;}
+  .metric-label{font-size:11px;color:var(--muted);}
+  .metric-value{font-size:20px;font-weight:800;}
+  .loading,.empty{color:var(--muted);font-size:13px;padding:10px 2px;}
+  .section{display:none;}
+  .section.active{display:block;}
+
+  .item-card{border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;}
+  .item-card.due{border-left:4px solid var(--red);background:#fff6f6;}
+  .item-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;}
+  .item-name{font-weight:700;font-size:14.5px;cursor:pointer;}
+  .item-name:hover{text-decoration:underline;}
+  .badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;color:#fff;margin-right:4px;}
+  .b-aero{background:var(--accent);} .b-materiel{background:var(--pink);} .b-reseau{background:var(--orange);} .b-tiers{background:#1c8c74;} .b-chantiers{background:#7a6bb0;}
+  .contact-row{margin-top:4px;font-size:12.5px;color:var(--muted);}
+  .contact-row a{color:var(--accent);text-decoration:none;margin-right:10px;}
+  .relance-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center;}
+  .relance-row input[type="date"], .relance-row select{border:1px solid var(--border);border-radius:7px;padding:6px 8px;font-size:12.5px;}
+  .in-heure{width:80px;border:1px solid var(--border);border-radius:7px;padding:6px 8px;font-size:12.5px;}
+  .save-btn{border:none;background:var(--accent);color:#fff;padding:6px 12px;border-radius:7px;font-size:12.5px;font-weight:600;cursor:pointer;}
+  .quick-btn{border:1px solid var(--border);background:#fff;color:var(--ink);padding:5px 10px;border-radius:7px;font-size:11.5px;cursor:pointer;}
+  .saved-flash{font-size:11.5px;color:var(--green);font-weight:700;margin-left:6px;display:none;}
+  .src-status{font-size:12px;margin-left:4px;}
+  .fiche-panel{display:none;margin-top:12px;padding-top:12px;border-top:1px dashed var(--border);}
+  .fiche-panel.open{display:block;}
+  .fiche-notes{width:100%;min-height:100px;border:1px solid var(--border);border-radius:8px;padding:8px;font-size:13px;font-family:inherit;resize:vertical;}
+  .val-tag{font-size:12px;font-weight:700;color:var(--green);}
+
+  .creneau-header{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:9px;margin:0 0 10px 2px;}
+  .creneau-icon{font-size:16px;}
+  .creneau-title{font-size:13px;font-weight:800;letter-spacing:.02em;}
+  .creneau-count{margin-left:auto;font-size:11.5px;font-weight:700;background:rgba(0,0,0,.08);padding:2px 9px;border-radius:20px;}
+
+  .filter-row{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
+  .filter-btn{border:1.5px solid var(--border);background:#fff;color:var(--muted);padding:7px 13px;border-radius:20px;font-size:12.5px;font-weight:700;cursor:pointer;}
+  .filter-btn.active{color:#fff;border-color:transparent;}
+  .filter-btn[data-filter="tous"].active{background:var(--ink);}
+  .filter-btn[data-filter="aero"].active{background:var(--accent);}
+  .filter-btn[data-filter="materiel"].active{background:var(--pink);}
+  .filter-btn[data-filter="reseau"].active{background:var(--orange);}
+  .filter-btn[data-filter="tiers"].active{background:#1c8c74;}
+  .filter-btn[data-filter="chantiers"].active{background:#7a6bb0;}
+  #commercial-filter .filter-btn.active{background:var(--ink);}
+  #creneau-filter .filter-btn.active{background:var(--ink);}
+
+  .settings-block{border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px;}
+  .settings-block h3{margin:0 0 8px 0;font-size:14px;}
+  .settings-block label{font-size:11.5px;color:var(--muted);display:block;margin:6px 0 2px;}
+  .settings-block input{width:100%;border:1px solid var(--border);border-radius:7px;padding:7px 9px;font-size:13px;}
+  .pilotage-table{width:100%;border-collapse:collapse;font-size:13px;}
+  .pilotage-table th,.pilotage-table td{padding:8px;border-bottom:1px solid var(--border);text-align:left;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📋 Aujourd'hui — Tous dossiers</h1>
+</header>
+
+<div style="display:flex;gap:8px;padding:10px 14px;background:#fff;border-bottom:1px solid #e5e7eb;flex-wrap:wrap;">
+  <a href="https://aerogomm.github.io/crmcommerciaux/leads_commerciaux.html" target="_blank" style="text-decoration:none;font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:8px;background:#2f6fed;color:#fff;">🟦 CRM Commercial</a>
+  <a href="https://aerogomm.github.io/crmcommerciaux/gestion_chantiers.html" target="_blank" style="text-decoration:none;font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:8px;background:#2f6fed;color:#fff;">🟦 Gestion Chantiers</a>
+  <a href="https://aerogomm.github.io/vente-materiel/vente_materiel.html" target="_blank" style="text-decoration:none;font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:8px;background:#c14f8f;color:#fff;">🟪 Vente Matériel</a>
+  <a href="https://aerogomm.github.io/crm-prospection/leads_aerogommage.html" target="_blank" style="text-decoration:none;font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:8px;background:#e08a1e;color:#fff;">🟧 Réseau (franchise)</a>
+  <a href="https://aerogomm.github.io/crm-prospection/suivi_reseau.html" target="_blank" style="text-decoration:none;font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:8px;background:#e08a1e;color:#fff;">🟧 Suivi applicateurs réseau</a>
+  <a href="https://aerogomm.github.io/tresorerie2026/" target="_blank" style="text-decoration:none;font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:8px;background:#1aa06d;color:#fff;">🟩 Trésorerie</a>
+  <a href="https://aerogomm.github.io/crm-prospection/tiers_externes.html" target="_blank" style="text-decoration:none;font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:8px;background:#6b7280;color:#fff;">⚪ Tiers Externes</a>
+</div>
+
+<nav id="tabs">
+  <button data-tab="aujourdhui" class="active">Aujourd'hui</button>
+  <button data-tab="pilotage">Pilotage</button>
+  <button data-tab="parametres">⚙ Paramètres</button>
+</nav>
+
+<main>
+
+  <!-- AUJOURD'HUI -->
+  <div class="section active" id="tab-aujourdhui">
+    <div class="grid4">
+      <div class="metric"><div class="metric-label">Relances dues</div><div class="metric-value" id="m-due">—</div></div>
+      <div class="metric"><div class="metric-label">Aérogommage</div><div class="metric-value" id="m-aero">—</div></div>
+      <div class="metric"><div class="metric-label">Matériel</div><div class="metric-value" id="m-materiel">—</div></div>
+      <div class="metric"><div class="metric-label">Réseau</div><div class="metric-value" id="m-reseau">—</div></div>
+      <div class="metric"><div class="metric-label">Tiers Externes</div><div class="metric-value" id="m-tiers">—</div></div>
+      <div class="metric"><div class="metric-label">Chantiers</div><div class="metric-value" id="m-chantiers">—</div></div>
+    </div>
+    <div class="filter-row" id="source-filter">
+      <button class="filter-btn active" data-filter="tous">Tous</button>
+      <button class="filter-btn" data-filter="aero">🟦 Aérogommage</button>
+      <button class="filter-btn" data-filter="materiel">🟪 Matériel</button>
+      <button class="filter-btn" data-filter="reseau">🟧 Réseau</button>
+      <button class="filter-btn" data-filter="tiers">🟢 Tiers Externes</button>
+      <button class="filter-btn" data-filter="chantiers">🟣 Chantiers</button>
+    </div>
+    <div class="filter-row" id="commercial-filter">
+      <button class="filter-btn active" data-commercial="tous">Tous</button>
+      <button class="filter-btn" data-commercial="David">David</button>
+      <button class="filter-btn" data-commercial="Raynald">Raynald</button>
+      <button class="filter-btn" data-commercial="Jerome">Jérôme</button>
+      <button class="filter-btn" data-commercial="Carole">Carole</button>
+    </div>
+    <div class="filter-row" id="creneau-filter">
+      <button class="filter-btn active" data-creneau="tous">Tous</button>
+      <button class="filter-btn" data-creneau="retard">⏰ En retard</button>
+      <button class="filter-btn" data-creneau="Début de matinée">🌅 Déb. matinée</button>
+      <button class="filter-btn" data-creneau="Fin de matinée">🌤️ Fin matinée</button>
+      <button class="filter-btn" data-creneau="Début d'après-midi">☀️ Déb. après-midi</button>
+      <button class="filter-btn" data-creneau="Fin d'après-midi">🌇 Fin après-midi</button>
+      <button class="filter-btn" data-creneau="Début de soirée">🌙 Déb. soirée</button>
+      <button class="filter-btn" data-creneau="sans">❔ Sans créneau</button>
+    </div>
+    <div class="card">
+      <p class="card-title">Relances à faire aujourd'hui (ou en retard), tous dossiers</p>
+      <div id="bloc-aujourdhui"><p class="loading">Chargement...</p></div>
+    </div>
+  </div>
+
+  <!-- PILOTAGE -->
+  <div class="section" id="tab-pilotage">
+    <div class="card">
+      <p class="card-title">Volume d'affaires en cours par dossier</p>
+      <div id="bloc-pilotage-volume"><p class="loading">Chargement...</p></div>
+    </div>
+    <div class="card">
+      <p class="card-title">Santé commerciale par commercial</p>
+      <div id="bloc-pilotage-commercial"><p class="loading">Chargement...</p></div>
+    </div>
+  </div>
+
+  <!-- PARAMETRES -->
+  <div class="section" id="tab-parametres">
+    <div class="settings-block">
+      <h3>🟦 Aérogommage (leads_commerciaux) <span class="src-status" id="status-aero" title="Statut non testé">⚪</span></h3>
+      <label>Base ID</label><input type="text" id="cfg-aero-base" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false">
+      <label>Table (nom ou ID)</label><input type="text" id="cfg-aero-table" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false">
+      <label>Token</label><input type="text" id="cfg-aero-token" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="settings-block">
+      <h3>🟪 Vente Matériel <span class="src-status" id="status-materiel" title="Statut non testé">⚪</span></h3>
+      <label>Base ID</label><input type="text" id="cfg-materiel-base" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false">
+      <label>Table (nom ou ID)</label><input type="text" id="cfg-materiel-table" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false">
+      <label>Token</label><input type="text" id="cfg-materiel-token" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="settings-block">
+      <h3>🟧 Réseau (Applicateurs) <span class="src-status" id="status-reseau" title="Statut non testé">⚪</span></h3>
+      <label>Base ID</label><input type="text" id="cfg-reseau-base" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false">
+      <label>Table (nom ou ID)</label><input type="text" id="cfg-reseau-table" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false">
+      <label>Token</label><input type="text" id="cfg-reseau-token" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="settings-block">
+      <h3>🟢 Tiers Externes <span class="src-status" id="status-tiers" title="Statut non testé">⚪</span></h3>
+      <label>Base ID</label><input type="text" id="cfg-tiers-base" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false">
+      <label>Table (nom ou ID)</label><input type="text" id="cfg-tiers-table" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false">
+      <label>Token</label><input type="text" id="cfg-tiers-token" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="settings-block">
+      <h3>🟣 Gestion Chantiers <span class="src-status" id="status-chantiers" title="Statut non testé">⚪</span></h3>
+      <label>Base ID</label><input type="text" id="cfg-chantiers-base" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false">
+      <label>Table (nom ou ID)</label><input type="text" id="cfg-chantiers-table" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false">
+      <label>Token</label><input type="text" id="cfg-chantiers-token" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false">
+    </div>
+    <button class="save-btn" id="btn-save-config">Enregistrer la configuration</button>
+    <span class="saved-flash" id="flash-config">✓ configuration enregistrée</span>
+  </div>
+
+</main>
+
+<script>
+/* ============================================================
+   Mapping des champs par source — noms Airtable exacts
+   ============================================================ */
+const FIELD_MAPS = {
+  aero: {
+    nom: "Entreprise", contact: "Interlocuteur", tel: "Telephone", email: null,
+    statut: "Statut", commercial: "Commercial",
+    relance: "ProchaineRelance", creneau: "CreneauRelance", heure: null,
+    notes: "Notes", valorisation: "Valorisation",
+    statutsFermes: ["Sans suite","Chantier terminé"]
+  },
+  materiel: {
+    nom: "Entreprise", contact: "Interlocuteur", tel: "Telephone", email: null,
+    statut: "Statut", commercial: "Commercial",
+    relance: "ProchaineRelance", creneau: "CreneauRelance", heure: null,
+    notes: "Notes", valorisation: "Valorisation",
+    statutsFermes: ["sans suite","Commission payée"]
+  },
+  reseau: {
+    nom: "nom", contact: null, tel: "telephone", email: "email",
+    statut: "categorie", commercial: null,
+    relance: "ProchaineRelance", creneau: "CreneauRelance", heure: "HeureRelance",
+    notes: "Notes", valorisation: null,
+    statutsFermes: ["stop"]
+  },
+  tiers: {
+    nom: "Entreprise", contact: "Interlocuteur", tel: "Telephone", email: "Email",
+    statut: "Statut", commercial: null,
+    relance: "ProchaineRelance", creneau: "CreneauRelance", heure: null,
+    notes: "Notes", valorisation: null,
+    statutsFermes: ["Terminé"]
+  },
+  chantiers: {
+    nom: "Entreprise", contact: "Interlocuteur", tel: "Telephone", email: null,
+    statut: "StatutChantier", commercial: "Commercial",
+    relance: "ProchaineRelance", creneau: "CreneauRelance", heure: null,
+    notes: "Notes", valorisation: "Valorisation",
+    statutsFermes: ["Soldé"]
+  }
+};
+
+const SOURCE_LABELS = { aero: "Aérogommage", materiel: "Matériel", reseau: "Réseau", tiers: "Tiers Externes", chantiers: "Chantiers" };
+const SOURCE_BADGE_CLASS = { aero: "b-aero", materiel: "b-materiel", reseau: "b-reseau", tiers: "b-tiers", chantiers: "b-chantiers" };
+
+const CRENEAUX = ["Début de matinée","Fin de matinée","Début d'après-midi","Fin d'après-midi","Début de soirée"];
+const CRENEAU_STYLE = {
+  "Début de matinée":     { icon:"🌅", color:"#2f6fed" },
+  "Fin de matinée":       { icon:"🌤️", color:"#1aa06d" },
+  "Début d'après-midi":   { icon:"☀️", color:"#e08a1e" },
+  "Fin d'après-midi":     { icon:"🌇", color:"#c14f8f" },
+  "Début de soirée":      { icon:"🌙", color:"#6b3fa0" }
+};
+let currentSourceFilter = "tous";
+let currentCommercialFilter = "tous";
+let currentCreneauFilter = "tous";
+
+/* ============================================================
+   Configuration — stockée en localStorage (par navigateur/appareil)
+   ============================================================ */
+function loadConfig(){
+  const raw = localStorage.getItem("tousDossiersConfig");
+  const defaults = {
+    aero:     { base: "appeDIbbdUiiO529W", table: "tblfp281M08EHR8b7", token: "" },
+    materiel: { base: "", table: "", token: "" },
+    reseau:   { base: "appaGCOS3oYqU6DQh", table: "Applicateurs", token: "patQgPTOIdBvWUjyY.558cdf938f80ded065b91e11e117ab9f63dd6f2a7e8c99d8387a40043b5cf994" },
+    tiers:    { base: "appeDIbbdUiiO529W", table: "TiersExternes", token: "" },
+    chantiers:{ base: "", table: "Chantiers", token: "" }
+  };
+  if(!raw) return defaults;
+  try{ return { ...defaults, ...JSON.parse(raw) }; } catch(e){ return defaults; }
+}
+function saveConfig(cfg){
+  localStorage.setItem("tousDossiersConfig", JSON.stringify(cfg));
+}
+
+let CONFIG = loadConfig();
+
+function fillSettingsForm(){
+  document.getElementById("cfg-aero-base").value = CONFIG.aero.base;
+  document.getElementById("cfg-aero-table").value = CONFIG.aero.table;
+  document.getElementById("cfg-aero-token").value = CONFIG.aero.token;
+  document.getElementById("cfg-materiel-base").value = CONFIG.materiel.base;
+  document.getElementById("cfg-materiel-table").value = CONFIG.materiel.table;
+  document.getElementById("cfg-materiel-token").value = CONFIG.materiel.token;
+  document.getElementById("cfg-reseau-base").value = CONFIG.reseau.base;
+  document.getElementById("cfg-reseau-table").value = CONFIG.reseau.table;
+  document.getElementById("cfg-reseau-token").value = CONFIG.reseau.token;
+  document.getElementById("cfg-tiers-base").value = CONFIG.tiers.base;
+  document.getElementById("cfg-tiers-table").value = CONFIG.tiers.table;
+  document.getElementById("cfg-tiers-token").value = CONFIG.tiers.token;
+  document.getElementById("cfg-chantiers-base").value = CONFIG.chantiers.base;
+  document.getElementById("cfg-chantiers-table").value = CONFIG.chantiers.table;
+  document.getElementById("cfg-chantiers-token").value = CONFIG.chantiers.token;
+}
+
+document.getElementById("btn-save-config").addEventListener("click", () => {
+  CONFIG = {
+    aero: {
+      base: document.getElementById("cfg-aero-base").value.trim(),
+      table: document.getElementById("cfg-aero-table").value.trim(),
+      token: document.getElementById("cfg-aero-token").value.trim()
+    },
+    materiel: {
+      base: document.getElementById("cfg-materiel-base").value.trim(),
+      table: document.getElementById("cfg-materiel-table").value.trim(),
+      token: document.getElementById("cfg-materiel-token").value.trim()
+    },
+    reseau: {
+      base: document.getElementById("cfg-reseau-base").value.trim(),
+      table: document.getElementById("cfg-reseau-table").value.trim(),
+      token: document.getElementById("cfg-reseau-token").value.trim()
+    },
+    tiers: {
+      base: document.getElementById("cfg-tiers-base").value.trim(),
+      table: document.getElementById("cfg-tiers-table").value.trim(),
+      token: document.getElementById("cfg-tiers-token").value.trim()
+    },
+    chantiers: {
+      base: document.getElementById("cfg-chantiers-base").value.trim(),
+      table: document.getElementById("cfg-chantiers-table").value.trim(),
+      token: document.getElementById("cfg-chantiers-token").value.trim()
+    }
+  };
+  saveConfig(CONFIG);
+  const flash = document.getElementById("flash-config");
+  flash.style.display = "inline";
+  setTimeout(()=> flash.style.display = "none", 2000);
+  loadAll();
+  testAllSources();
+});
+
+/* ============================================================
+   Airtable helpers (génériques, paramétrés par source)
+   ============================================================ */
+function atUrl(cfg, path=""){
+  return `https://api.airtable.com/v0/${cfg.base}/${encodeURIComponent(cfg.table)}${path}`;
+}
+async function atListAll(cfg){
+  if(!cfg.base || !cfg.table || !cfg.token) return [];
+  let records = []; let offset = null;
+  do{
+    const url = atUrl(cfg, "?pageSize=100" + (offset ? "&offset="+offset : ""));
+    const res = await fetch(url, { headers: { "Authorization": "Bearer " + cfg.token } });
+    if(!res.ok){ console.error("Airtable error", cfg.table, res.status, await res.text()); break; }
+    const data = await res.json();
+    records = records.concat(data.records || []);
+    offset = data.offset;
+  } while(offset);
+  return records;
+}
+async function atUpdate(cfg, recordId, fields){
+  const res = await fetch(atUrl(cfg, "/"+recordId), {
+    method: "PATCH",
+    headers: { "Authorization": "Bearer " + cfg.token, "Content-Type": "application/json" },
+    body: JSON.stringify({ fields })
+  });
+  if(!res.ok){ console.error("Update failed", await res.text()); return null; }
+  return res.json();
+}
+
+/* ============================================================
+   Test de connexion par source — affiche un pavé vert/rouge
+   dans Paramètres pour diagnostiquer une source mal configurée
+   (ex: token/base altéré par l'autocapitalisation du clavier mobile)
+   ============================================================ */
+async function testSource(key, cfg){
+  const el = document.getElementById("status-"+key);
+  if(!el) return;
+  if(!cfg.base || !cfg.table || !cfg.token){
+    el.textContent = "⚪"; el.title = "Non configuré (Base ID / Table / Token manquant)";
+    return;
+  }
+  el.textContent = "⏳"; el.title = "Test en cours…";
+  try{
+    const res = await fetch(atUrl(cfg, "?pageSize=1"), { headers: { "Authorization": "Bearer " + cfg.token } });
+    if(res.ok){
+      el.textContent = "🟢"; el.title = "Connexion OK";
+    } else {
+      const body = await res.text();
+      el.textContent = "🔴"; el.title = `Échec (${res.status}) — vérifie Base ID / Table / Token. ${body.slice(0,200)}`;
+    }
+  }catch(err){
+    el.textContent = "🔴"; el.title = "Échec réseau : " + err.message;
+  }
+}
+async function testAllSources(){
+  await Promise.all([
+    testSource("aero", CONFIG.aero),
+    testSource("materiel", CONFIG.materiel),
+    testSource("reseau", CONFIG.reseau),
+    testSource("tiers", CONFIG.tiers),
+    testSource("chantiers", CONFIG.chantiers)
+  ]);
+}
+
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function normFr(s){ return (s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase(); }
+
+/* ============================================================
+   Chargement combiné des 3 sources
+   ============================================================ */
+let ALL_ITEMS = []; // liste unifiée { source, id, nom, contact, tel, email, statut, commercial, relance, creneau, heure, notes, valorisation, raw }
+
+function mapRecord(source, rec){
+  const m = FIELD_MAPS[source];
+  const f = rec.fields;
+  return {
+    source, id: rec.id,
+    nom: m.nom ? (f[m.nom] || "(sans nom)") : "(sans nom)",
+    contact: m.contact ? (f[m.contact] || "") : "",
+    tel: m.tel ? (f[m.tel] || "") : "",
+    email: m.email ? (f[m.email] || "") : "",
+    statut: m.statut ? (f[m.statut] || "") : "",
+    commercial: m.commercial ? (f[m.commercial] || "") : "",
+    relance: m.relance ? (f[m.relance] || "") : "",
+    creneau: m.creneau ? (f[m.creneau] || "") : "",
+    heure: m.heure ? (f[m.heure] || "") : "",
+    notes: m.notes ? (f[m.notes] || "") : "",
+    valorisation: m.valorisation ? (Number(f[m.valorisation]) || 0) : null,
+    fermes: m.statutsFermes || []
+  };
+}
+
+async function loadAll(){
+  const [aeroRecs, materielRecs, reseauRecs, tiersRecs, chantiersRecs] = await Promise.all([
+    atListAll(CONFIG.aero),
+    atListAll(CONFIG.materiel),
+    atListAll(CONFIG.reseau),
+    atListAll(CONFIG.tiers),
+    atListAll(CONFIG.chantiers)
+  ]);
+  ALL_ITEMS = [
+    ...aeroRecs.map(r => mapRecord("aero", r)),
+    ...materielRecs.map(r => mapRecord("materiel", r)),
+    ...reseauRecs.map(r => mapRecord("reseau", r)),
+    ...tiersRecs.map(r => mapRecord("tiers", r)),
+    ...chantiersRecs.map(r => mapRecord("chantiers", r))
+  ];
+  renderAujourdhui();
+  renderPilotage();
+}
+
+/* ============================================================
+   Rendu — Aujourd'hui
+   ============================================================ */
+function renderAujourdhui(){
+  const today = todayISO();
+  const dueAll = ALL_ITEMS.filter(it => it.relance && it.relance <= today && !it.fermes.includes(it.statut));
+  let due = currentSourceFilter==="tous" ? dueAll : dueAll.filter(it => it.source===currentSourceFilter);
+  if(currentCommercialFilter!=="tous"){
+    due = due.filter(it => normFr(it.commercial).includes(normFr(currentCommercialFilter)));
+  }
+  if(currentCreneauFilter==="retard"){
+    due = due.filter(it => it.relance < today);
+  } else if(currentCreneauFilter==="sans"){
+    due = due.filter(it => it.relance === today && !it.creneau);
+  } else if(currentCreneauFilter!=="tous"){
+    due = due.filter(it => it.relance === today && it.creneau === currentCreneauFilter);
+  }
+
+  const el = document.getElementById("bloc-aujourdhui");
+  if(due.length === 0){
+    el.innerHTML = `<p class="empty">Aucune relance due aujourd'hui 🎉</p>`;
+  } else {
+    const enRetard = due.filter(it => it.relance < today);
+    const today_items = due.filter(it => it.relance === today);
+
+    const groupes = [];
+    if(enRetard.length){
+      enRetard.sort((a,b)=> a.relance.localeCompare(b.relance));
+      groupes.push({ titre: "En retard", icon:"⏰", color:"var(--red)", items: enRetard });
+    }
+    CRENEAUX.forEach(c => {
+      const items = today_items.filter(it => it.creneau === c);
+      items.sort((a,b) => (a.heure||"").localeCompare(b.heure||"") || a.nom.localeCompare(b.nom));
+      if(items.length) groupes.push({ titre: c, icon: CRENEAU_STYLE[c].icon, color: CRENEAU_STYLE[c].color, items });
+    });
+    const sansCreneau = today_items.filter(it => !it.creneau);
+    if(sansCreneau.length) groupes.push({ titre: "Sans créneau précisé", icon:"❔", color:"var(--muted)", items: sansCreneau });
+
+    el.innerHTML = groupes.map(g => `
+      <div style="margin-bottom:18px;">
+        <div class="creneau-header" style="background:${g.color}22;border-left:5px solid ${g.color};">
+          <span class="creneau-icon">${g.icon}</span>
+          <span class="creneau-title" style="color:${g.color};">${g.titre}</span>
+          <span class="creneau-count" style="color:${g.color};">${g.items.length}</span>
+        </div>
+        ${g.items.map(renderItemCard).join("")}
+      </div>
+    `).join("");
+    attachItemHandlers(el);
+  }
+
+  document.getElementById("m-due").textContent = dueAll.length;
+  document.getElementById("m-aero").textContent = dueAll.filter(i=>i.source==="aero").length;
+  document.getElementById("m-materiel").textContent = dueAll.filter(i=>i.source==="materiel").length;
+  document.getElementById("m-reseau").textContent = dueAll.filter(i=>i.source==="reseau").length;
+  document.getElementById("m-tiers").textContent = dueAll.filter(i=>i.source==="tiers").length;
+  document.getElementById("m-chantiers").textContent = dueAll.filter(i=>i.source==="chantiers").length;
+}
+
+function renderItemCard(it){
+  const isDue = true; // déjà filtré
+  const creneauOptions = CRENEAUX.map(c => `<option value="${c}" ${c===it.creneau?"selected":""}>${c}</option>`).join("");
+  return `
+  <div class="item-card due" data-id="${it.id}" data-source="${it.source}">
+    <div class="item-top">
+      <div>
+        <span class="badge ${SOURCE_BADGE_CLASS[it.source]}">${SOURCE_LABELS[it.source]}</span>
+        <span class="item-name" data-toggle-fiche="${it.id}-${it.source}">${it.nom}</span>
+        ${it.valorisation !== null ? `<span class="val-tag"> · ${it.valorisation.toLocaleString("fr-FR")} €</span>` : ""}
+      </div>
+    </div>
+    <div class="contact-row">
+      ${it.contact ? it.contact+" — " : ""}
+      ${it.tel ? `<a href="tel:${it.tel}">📞 ${it.tel}</a>`:""}
+      ${it.email ? `<a href="mailto:${it.email}">✉️ ${it.email}</a>`:""}
+      ${it.commercial ? ` · <span style="color:var(--muted);">${it.commercial}</span>` : ""}
+    </div>
+    <div class="relance-row">
+      <input type="date" class="in-relance" value="${it.relance}">
+      <input type="text" class="in-heure" placeholder="14h30" value="${it.heure||""}">
+      <select class="in-creneau"><option value="">Créneau —</option>${creneauOptions}</select>
+      <button class="quick-btn qb-plus1">+1 jour</button>
+      <button class="quick-btn qb-plus7">+7 jours</button>
+      <button class="save-btn btn-save-relance">Enregistrer</button>
+      <span class="saved-flash">✓ enregistré</span>
+    </div>
+    <div class="fiche-panel" id="fiche-${it.source}-${it.id}">
+      <label style="font-size:11.5px;color:var(--muted);display:block;margin-bottom:4px;">Notes / historique</label>
+      <textarea class="fiche-notes">${it.notes}</textarea>
+      <div style="margin-top:8px;">
+        <button class="save-btn btn-save-notes">Enregistrer les notes</button>
+        <span class="saved-flash flash-notes">✓ enregistré</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+function attachItemHandlers(container){
+  container.querySelectorAll(".item-card").forEach(card => {
+    const recId = card.dataset.id;
+    const source = card.dataset.source;
+    const cfg = CONFIG[source];
+    const map = FIELD_MAPS[source];
+
+    card.querySelector(".item-name").addEventListener("click", () => {
+      document.getElementById(`fiche-${source}-${recId}`).classList.toggle("open");
+    });
+
+    function setDate(iso){ card.querySelector(".in-relance").value = iso; }
+    card.querySelector(".qb-plus1").addEventListener("click", () => {
+      const d = new Date(card.querySelector(".in-relance").value || todayISO());
+      d.setDate(d.getDate()+1);
+      setDate(d.toISOString().slice(0,10));
+    });
+    card.querySelector(".qb-plus7").addEventListener("click", () => {
+      const d = new Date(card.querySelector(".in-relance").value || todayISO());
+      d.setDate(d.getDate()+7);
+      setDate(d.toISOString().slice(0,10));
+    });
+
+    card.querySelector(".btn-save-relance").addEventListener("click", async () => {
+      const relance = card.querySelector(".in-relance").value;
+      const heure = card.querySelector(".in-heure").value;
+      const creneau = card.querySelector(".in-creneau").value;
+      const fields = {};
+      if(map.relance) fields[map.relance] = relance || null;
+      if(map.heure) fields[map.heure] = heure || null;
+      if(map.creneau) fields[map.creneau] = creneau || null;
+      await atUpdate(cfg, recId, fields);
+      const flash = card.querySelector(".relance-row .saved-flash");
+      flash.style.display = "inline";
+      setTimeout(()=> flash.style.display="none", 2000);
+      setTimeout(loadAll, 600);
+    });
+
+    card.querySelector(".btn-save-notes").addEventListener("click", async () => {
+      const notes = card.querySelector(".fiche-notes").value;
+      if(!map.notes) return;
+      await atUpdate(cfg, recId, { [map.notes]: notes });
+      const flash = card.querySelector(".flash-notes");
+      flash.style.display = "inline";
+      setTimeout(()=> flash.style.display="none", 2000);
+    });
+  });
+}
+
+/* ============================================================
+   Rendu — Pilotage
+   ============================================================ */
+function renderPilotage(){
+  // Volume d'affaires en cours (valorisation) par dossier, hors statuts fermés
+  const open = ALL_ITEMS.filter(it => !it.fermes.includes(it.statut));
+  const bySource = { aero:0, materiel:0, reseau:0, chantiers:0 };
+  open.forEach(it => { if(it.valorisation) bySource[it.source] += it.valorisation; });
+
+  document.getElementById("bloc-pilotage-volume").innerHTML = `
+    <table class="pilotage-table">
+      <thead><tr><th>Dossier</th><th>Volume en cours</th><th>Dossiers ouverts</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge b-aero">Aérogommage</span></td><td>${bySource.aero.toLocaleString("fr-FR")} €</td><td>${open.filter(i=>i.source==="aero").length}</td></tr>
+        <tr><td><span class="badge b-materiel">Matériel</span></td><td>${bySource.materiel.toLocaleString("fr-FR")} €</td><td>${open.filter(i=>i.source==="materiel").length}</td></tr>
+        <tr><td><span class="badge b-reseau">Réseau</span></td><td>—</td><td>${open.filter(i=>i.source==="reseau").length}</td></tr>
+        <tr><td><span class="badge b-tiers">Tiers Externes</span></td><td>—</td><td>${open.filter(i=>i.source==="tiers").length}</td></tr>
+        <tr><td><span class="badge b-chantiers">Chantiers</span></td><td>${bySource.chantiers.toLocaleString("fr-FR")} €</td><td>${open.filter(i=>i.source==="chantiers").length}</td></tr>
+      </tbody>
+    </table>`;
+
+  // Santé commerciale par commercial (aero + materiel uniquement, réseau n'a pas de commercial dédié)
+  const byCommercial = {};
+  open.forEach(it => {
+    if(!it.commercial) return;
+    if(!byCommercial[it.commercial]) byCommercial[it.commercial] = { dossiers:0, volume:0, enRetard:0 };
+    byCommercial[it.commercial].dossiers += 1;
+    byCommercial[it.commercial].volume += it.valorisation || 0;
+    if(it.relance && it.relance < todayISO()) byCommercial[it.commercial].enRetard += 1;
+  });
+  const rows = Object.entries(byCommercial).map(([nom, d]) => `
+    <tr><td>${nom}</td><td>${d.dossiers}</td><td>${d.volume.toLocaleString("fr-FR")} €</td><td>${d.enRetard}</td></tr>
+  `).join("");
+  document.getElementById("bloc-pilotage-commercial").innerHTML = rows ? `
+    <table class="pilotage-table">
+      <thead><tr><th>Commercial</th><th>Dossiers ouverts</th><th>Volume</th><th>Relances en retard</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>` : `<p class="empty">Aucune donnée disponible.</p>`;
+}
+
+/* ============================================================
+   Filtre par source
+   ============================================================ */
+document.getElementById("source-filter").addEventListener("click", (e) => {
+  const btn = e.target.closest(".filter-btn");
+  if(!btn) return;
+  currentSourceFilter = btn.dataset.filter;
+  document.querySelectorAll("#source-filter .filter-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  renderAujourdhui();
+});
+
+document.getElementById("commercial-filter").addEventListener("click", (e) => {
+  const btn = e.target.closest(".filter-btn");
+  if(!btn) return;
+  currentCommercialFilter = btn.dataset.commercial;
+  document.querySelectorAll("#commercial-filter .filter-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  renderAujourdhui();
+});
+
+document.getElementById("creneau-filter").addEventListener("click", (e) => {
+  const btn = e.target.closest(".filter-btn");
+  if(!btn) return;
+  currentCreneauFilter = btn.dataset.creneau;
+  document.querySelectorAll("#creneau-filter .filter-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  renderAujourdhui();
+});
+
+/* ============================================================
+   Navigation onglets
+   ============================================================ */
+document.getElementById("tabs").addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-tab]");
+  if(!btn) return;
+  document.querySelectorAll("#tabs button").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+  document.getElementById("tab-"+btn.dataset.tab).classList.add("active");
+});
+
+/* ============================================================
+   Init
+   ============================================================ */
+fillSettingsForm();
+testAllSources();
+loadAll();
+setInterval(loadAll, 5*60*1000);
+</script>
+
+</body>
+</html>
