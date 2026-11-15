@@ -497,7 +497,7 @@
   </div>
   <div class="modal dl-devis-modal" style="max-width:760px;">
     <div class="mhead">
-      <h2><span id="dl_mode_titre">📄 Générer un devis</span> <span style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:#4B7B4E;text-transform:none;letter-spacing:0;font-weight:600;">· version 15/11 v31</span></h2>
+      <h2><span id="dl_mode_titre">📄 Générer un devis</span> <span style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:#4B7B4E;text-transform:none;letter-spacing:0;font-weight:600;">· version 15/11 v32</span></h2>
       <button class="icon-btn" id="closeDevisLucas">✕</button>
     </div>
     <div class="mbody">
@@ -1104,8 +1104,23 @@ const EVAL_DEFAUT = {
   tech2:200,      // € / technicien / jour quand ils sont 2
   tech1:300,      // € / jour pour un technicien seul
   commission:15,  // % du CA HT
+  hebergement:"", // vide = calcul automatique selon la grille ci-dessous
   autresLib:"", autres:""
 };
+// Frais d'hébergement (€ HT, total du chantier) selon le nombre de techniciens et de journées
+const EVAL_HEBERGEMENT = {
+  2: { 2:180, 3:260, 4:340, 5:420 },
+  3: { 2:230, 3:360, 4:390, 5:520 }
+};
+function evalNbTechs(ev){ const t = Number(ev.techs); return t === 1 ? 1 : t === 3 ? 3 : 2; }
+// Montant de la grille : 0 pour 1 technicien ou 1 journée ; au-delà de 5 jours, on prolonge avec l'écart 4 → 5 jours
+function evalHebergementGrille(ev){
+  const n = evalNbTechs(ev), j = Math.ceil(evalNum(ev.jours));
+  const g = EVAL_HEBERGEMENT[n];
+  if(!g || j < 2) return 0;
+  if(g[j] !== undefined) return g[j];
+  return g[5] + (j - 5) * (g[5] - g[4]);
+}
 const EVAL_SEUIL_VERT = 40, EVAL_SEUIL_ORANGE = 30;   // % de marge
 function evalNum(v){ const n = Number(String(v ?? "").replace(/\s/g,"").replace(",", ".")); return isFinite(n) ? n : 0; }
 function evalLire(json){
@@ -1115,18 +1130,20 @@ function evalLire(json){
 function evalEstRemplie(ev){ return !!ev && evalNum(ev.jours) > 0; }
 function evalArr(x){ return Math.round(x * 100) / 100; }
 function evalCalcul(ev, ca, tauxCom){
-  const j = evalNum(ev.jours), m = evalNum(ev.machines), deux = Number(ev.techs) !== 1;
+  const j = evalNum(ev.jours), m = evalNum(ev.machines), n = evalNbTechs(ev);
+  const hebManuel = String(ev.hebergement ?? "").trim() !== "";
   const taux = (tauxCom === undefined || tauxCom === null) ? evalNum(ev.commission) : evalNum(tauxCom);
   const r = {
     camion:     evalArr(evalNum(ev.camion) * j),
     gasoil:     evalArr(evalNum(ev.gasoil) * j),
     abrasifs:   evalArr(evalNum(ev.abrasifs) * j * m),
-    techniciens:evalArr(deux ? 2 * evalNum(ev.tech2) * j : evalNum(ev.tech1) * j),
+    techniciens:evalArr(n === 1 ? evalNum(ev.tech1) * j : n * evalNum(ev.tech2) * j),
+    hebergement:evalArr(hebManuel ? evalNum(ev.hebergement) : evalHebergementGrille(ev)),
     commission: evalArr(evalNum(ca) * taux / 100),
     autres:     evalArr(evalNum(ev.autres)),
     ca: evalNum(ca), taux
   };
-  r.materiel = evalArr(r.camion + r.gasoil + r.abrasifs + r.autres);   // → « Coût matériel »
+  r.materiel = evalArr(r.camion + r.gasoil + r.abrasifs + r.hebergement + r.autres);   // → « Coût matériel » (frais de chantier)
   r.mainOeuvre = r.techniciens;                                          // → « Coût main d'œuvre »
   r.total = evalArr(r.materiel + r.mainOeuvre + r.commission);
   r.marge = evalArr(r.ca - r.total);
@@ -1144,12 +1161,13 @@ function evalPctTxt(p){ return p === null ? "—" : p.toLocaleString("fr-FR", { 
 // Texte lisible (résumé) pour le champ « Matériel nécessaire » de la fiche chantier
 function evalResume(ev, r){
   const j = evalNum(ev.jours);
-  const deux = Number(ev.techs) !== 1;
+  const n = evalNbTechs(ev);
   return [
-    `ÉVALUATION PRESTATION — ${String(j).replace(".", ",")} jour(s), ${deux ? "2 techniciens" : "1 technicien"}, ${evalNum(ev.machines)} machine(s)`,
+    `ÉVALUATION PRESTATION — ${String(j).replace(".", ",")} jour(s), ${n === 1 ? "1 technicien" : n + " techniciens"}, ${evalNum(ev.machines)} machine(s)`,
     `• Location camion : ${evalEuro(r.camion)}`,
     `• Gasoil (compresseur + camion) : ${evalEuro(r.gasoil)}`,
     `• Abrasifs : ${evalEuro(r.abrasifs)}`,
+    r.hebergement ? `• Hébergement : ${evalEuro(r.hebergement)}` : "",
     r.autres ? `• ${(ev.autresLib || "Autres frais").trim()} : ${evalEuro(r.autres)}` : "",
     `• Techniciens : ${evalEuro(r.techniciens)}`,
     `• Commission (${String(r.taux).replace(".", ",")} %) : ${evalEuro(r.commission)}`,
@@ -1181,7 +1199,7 @@ function evalMonter(hostId, ev, opts){
       <label style="flex:1;min-width:90px;font-size:11.5px;font-weight:600;">Nombre de jours<br>${inp("jours","100%","ex. 3")}</label>
       <label style="flex:1;min-width:120px;font-size:11.5px;font-weight:600;">Techniciens<br>
         <select data-ev="techs" id="${p}techs" style="width:100%;padding:6px 7px;border:1px solid #C9CFD5;border-radius:5px;font-size:13px;background:#fff;color:#1F2933;">
-          <option value="2">2 techniciens</option><option value="1">1 technicien seul</option>
+          <option value="2">2 techniciens</option><option value="3">3 techniciens</option><option value="1">1 technicien seul</option>
         </select></label>
       <label style="flex:1;min-width:80px;font-size:11.5px;font-weight:600;">Machines<br>${inp("machines","100%","1")}</label>
     </div>
@@ -1193,6 +1211,7 @@ function evalMonter(hostId, ev, opts){
         ${lig("Location camion", `${inp("camion","64px")} €/jour`, "camion")}
         ${lig("Gasoil (compresseur + camion)", `${inp("gasoil","64px")} €/jour`, "gasoil")}
         ${lig("Abrasifs", `${inp("abrasifs","64px")} €/jour/machine`, "abrasifs")}
+        ${lig("Hébergement", `${inp("hebergement","64px","auto")} € <span id="${p}hebInfo" style="font-size:10.5px;color:#4A5560;"></span>`, "hebergement")}
         ${lig("Techniciens", `<span id="${p}box2">${inp("tech2","64px")} €/tech/jour</span><span id="${p}box1">${inp("tech1","64px")} €/jour</span>`, "techniciens")}
         ${lig("Commission", tauxImpose ? `<span id="${p}tauxAff"></span> % du CA <span style="font-size:10.5px;color:#4A5560;">(taux de la fiche)</span>` : `${inp("commission","52px")} % du CA HT`, "commission")}
         ${lig(`<input type="text" data-ev="autresLib" id="${p}autresLib" placeholder="Autres frais (péage…)" style="width:100%;min-width:110px;padding:6px 7px;border:1px solid #C9CFD5;border-radius:5px;font-size:12.5px;background:#fff;color:#1F2933;">`, `${inp("autres","64px","0")} €`, "autres")}
@@ -1218,13 +1237,20 @@ function evalRafraichir(hostId, modifie){
   const ca = typeof o.getCA === "function" ? o.getCA() : 0;
   const taux = typeof o.getTaux === "function" ? o.getTaux() : undefined;
   const r = evalCalcul(ev, ca, taux);
-  const deux = Number(ev.techs) !== 1;
+  const deux = evalNbTechs(ev) !== 1;
+  const hi = document.getElementById(p + "hebInfo");
+  if(hi){
+    const auto = String(ev.hebergement ?? "").trim() === "";
+    hi.textContent = auto ? (evalNbTechs(ev) === 1 ? "(grille : 1 technicien → 0)" : `(grille ${evalNbTechs(ev)} techs)`) : "(saisi à la main)";
+    const champ = document.getElementById(p + "hebergement");
+    if(champ) champ.placeholder = String(evalHebergementGrille(ev));
+  }
   const b2 = document.getElementById(p + "box2"), b1 = document.getElementById(p + "box1");
   if(b2) b2.style.display = deux ? "" : "none";
   if(b1) b1.style.display = deux ? "none" : "";
   const ta = document.getElementById(p + "tauxAff");
   if(ta) ta.textContent = String(r.taux).replace(".", ",");
-  ["camion","gasoil","abrasifs","techniciens","commission","autres"].forEach(k=>{
+  ["camion","gasoil","abrasifs","hebergement","techniciens","commission","autres"].forEach(k=>{
     const td = document.getElementById(p + "t_" + k);
     if(td) td.textContent = evalEuro(r[k]);
   });
