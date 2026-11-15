@@ -497,7 +497,7 @@
   </div>
   <div class="modal dl-devis-modal" style="max-width:760px;">
     <div class="mhead">
-      <h2><span id="dl_mode_titre">📄 Générer un devis</span> <span style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:#4B7B4E;text-transform:none;letter-spacing:0;font-weight:600;">· version 15/11 v29</span></h2>
+      <h2><span id="dl_mode_titre">📄 Générer un devis</span> <span style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:#4B7B4E;text-transform:none;letter-spacing:0;font-weight:600;">· version 15/11 v30</span></h2>
       <button class="icon-btn" id="closeDevisLucas">✕</button>
     </div>
     <div class="mbody">
@@ -2028,7 +2028,7 @@ function renderRecurrents(){
       <div class="thead" style="cursor:pointer;" onclick="openLeadModal('${l.id}')">
         <div>
           <div class="nom">${escapeHtml(displayName(l))}</div>
-          <div class="sub">${escapeHtml(l[FIELD.adresse]||"")}</div>
+          <div class="sub">${escapeHtml(l[FIELD.adresse]||"")}${l[FIELD.valo] ? ` · <b style="color:var(--graphite);">${euro(l[FIELD.valo])}</b>` : ""}</div>
         </div>
         <span class="pill ${region==='PRGO'?'prgo':'lmpm'}">${region || "—"}</span>
       </div>
@@ -2075,7 +2075,7 @@ function renderSansReponse(){
       <div class="thead" style="cursor:pointer;" onclick="openLeadModal('${l.id}')">
         <div>
           <div class="nom">${escapeHtml(displayName(l))}</div>
-          <div class="sub">${escapeHtml(l[FIELD.adresse]||"")}</div>
+          <div class="sub">${escapeHtml(l[FIELD.adresse]||"")}${l[FIELD.valo] ? ` · <b style="color:var(--graphite);">${euro(l[FIELD.valo])}</b>` : ""}</div>
         </div>
         <span class="pill ${region==='PRGO'?'prgo':'lmpm'}">${region || "—"}</span>
       </div>
@@ -2120,7 +2120,7 @@ function renderPlomb(){
       <div class="thead" style="cursor:pointer;" onclick="openLeadModal('${l.id}')">
         <div>
           <div class="nom">${escapeHtml(displayName(l))}</div>
-          <div class="sub">${escapeHtml(l[FIELD.adresse]||"")}</div>
+          <div class="sub">${escapeHtml(l[FIELD.adresse]||"")}${l[FIELD.valo] ? ` · <b style="color:var(--graphite);">${euro(l[FIELD.valo])}</b>` : ""}</div>
         </div>
         <span class="pill ${region==='PRGO'?'prgo':'lmpm'}">${region || "—"}</span>
       </div>
@@ -2142,7 +2142,7 @@ function deferredCardHtml(l){
       <div class="thead" style="cursor:pointer;" onclick="openLeadModal('${l.id}')">
         <div>
           <div class="nom">${escapeHtml(displayName(l))}</div>
-          <div class="sub">${escapeHtml(l[FIELD.adresse]||"")}</div>
+          <div class="sub">${escapeHtml(l[FIELD.adresse]||"")}${l[FIELD.valo] ? ` · <b style="color:var(--graphite);">${euro(l[FIELD.valo])}</b>` : ""}</div>
         </div>
         <span class="pill ${region==='PRGO'?'prgo':'lmpm'}">${region || "—"}</span>
       </div>
