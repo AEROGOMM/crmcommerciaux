@@ -422,6 +422,7 @@
 </div>
 
 <div id="view2027" style="display:none;">
+  <div class="stats" id="stats2027"></div>
   <div id="list2027"></div>
 </div>
 
@@ -496,7 +497,7 @@
   </div>
   <div class="modal dl-devis-modal" style="max-width:760px;">
     <div class="mhead">
-      <h2><span id="dl_mode_titre">📄 Générer un devis</span> <span style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:#4B7B4E;text-transform:none;letter-spacing:0;font-weight:600;">· version 15/11 v28</span></h2>
+      <h2><span id="dl_mode_titre">📄 Générer un devis</span> <span style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:#4B7B4E;text-transform:none;letter-spacing:0;font-weight:600;">· version 15/11 v29</span></h2>
       <button class="icon-btn" id="closeDevisLucas">✕</button>
     </div>
     <div class="mbody">
@@ -2191,6 +2192,13 @@ function render2027(){
   });
   list.sort((a,b)=> (a[FIELD.relance]||"").localeCompare(b[FIELD.relance]||""));
 
+  // En-tête : nombre de dossiers et valorisation de la sélection affichée (filtres compris)
+  const valo2027 = list.reduce((s,l)=> s + (Number(l[FIELD.valo])||0), 0);
+  const sansValo = list.filter(l=> !(Number(l[FIELD.valo])>0)).length;
+  $("stats2027").innerHTML = `
+    <div class="stat total"><div class="label">Dossiers relance 2027</div><div class="value mono">${list.length}</div></div>
+    <div class="stat total"><div class="label">Valorisation de la sélection</div><div class="value mono">${euro(valo2027)}</div></div>
+    ${sansValo ? `<div class="stat"><div class="label">Dossiers sans valorisation</div><div class="value mono" style="color:var(--ink-soft);">${sansValo}</div></div>` : ""}`;
   const wrap = $("list2027");
   if(list.length === 0){
     wrap.innerHTML = `<div class="today-empty">Aucune relance programmée en 2027 pour le moment.</div>`;
