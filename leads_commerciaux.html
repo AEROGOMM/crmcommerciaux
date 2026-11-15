@@ -497,7 +497,7 @@
   </div>
   <div class="modal dl-devis-modal" style="max-width:760px;">
     <div class="mhead">
-      <h2><span id="dl_mode_titre">📄 Générer un devis</span> <span style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:#4B7B4E;text-transform:none;letter-spacing:0;font-weight:600;">· version 15/11 v30</span></h2>
+      <h2><span id="dl_mode_titre">📄 Générer un devis</span> <span style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:#4B7B4E;text-transform:none;letter-spacing:0;font-weight:600;">· version 15/11 v31</span></h2>
       <button class="icon-btn" id="closeDevisLucas">✕</button>
     </div>
     <div class="mbody">
@@ -735,6 +735,11 @@
           <input type="text" id="f_valorisation" placeholder="Ex : 3500">
         </div>
       </div>
+      <details id="evalLeadBox" style="margin:0 0 12px;">
+        <summary style="cursor:pointer;font-weight:700;font-size:13px;color:#3E6B41;padding:6px 0;">🧮 Évaluation de la prestation (coûts &amp; marge) <span id="evalLeadResume" style="font-weight:600;font-size:12px;"></span></summary>
+        <div id="evalLead" style="margin-top:6px;"></div>
+        <p class="hint" style="margin-top:6px;">Les tarifs sont modifiables pour ce chantier. Au passage en « Chantier accepté », l'évaluation est reprise dans le pavé « Matériel &amp; coûts » de Gestion Chantiers.</p>
+      </details>
       <div class="row2">
         <div class="field">
           <label>Date prévisionnelle du projet</label>
@@ -1083,8 +1088,167 @@ const FIELD = {
   passageTech:"PassageTechnique", datePassage:"DatePassageTechnique", consignePassage:"ConsignePassage",
   rdvTech:"RdvTechProgramme", dateRdvTech:"DateHeureRdvTech",
   prestationLocation:"PrestationLocation",
-  demandeDevisLucas:"DemandeDevisLucas", devisLucasHisto:"DevisLucasHistorique"
+  demandeDevisLucas:"DemandeDevisLucas", devisLucasHisto:"DevisLucasHistorique",
+  evaluation:"EvaluationPrestation"
 };
+/* =========================================================
+   ÉVALUATION DE LA PRESTATION — coûts journaliers et marge
+   (même module dans leads_commerciaux.html et gestion_chantiers.html)
+   Données enregistrées en JSON dans le champ Airtable "EvaluationPrestation"
+   ========================================================= */
+const EVAL_DEFAUT = {
+  jours:"", techs:2, machines:1,
+  camion:50,      // € HT / jour
+  gasoil:130,     // € HT / jour (compresseur + camion)
+  abrasifs:90,    // € HT / jour / machine
+  tech2:200,      // € / technicien / jour quand ils sont 2
+  tech1:300,      // € / jour pour un technicien seul
+  commission:15,  // % du CA HT
+  autresLib:"", autres:""
+};
+const EVAL_SEUIL_VERT = 40, EVAL_SEUIL_ORANGE = 30;   // % de marge
+function evalNum(v){ const n = Number(String(v ?? "").replace(/\s/g,"").replace(",", ".")); return isFinite(n) ? n : 0; }
+function evalLire(json){
+  try{ const o = JSON.parse(json || "{}"); return { ...EVAL_DEFAUT, ...(o && typeof o === "object" ? o : {}) }; }
+  catch(err){ return { ...EVAL_DEFAUT }; }
+}
+function evalEstRemplie(ev){ return !!ev && evalNum(ev.jours) > 0; }
+function evalArr(x){ return Math.round(x * 100) / 100; }
+function evalCalcul(ev, ca, tauxCom){
+  const j = evalNum(ev.jours), m = evalNum(ev.machines), deux = Number(ev.techs) !== 1;
+  const taux = (tauxCom === undefined || tauxCom === null) ? evalNum(ev.commission) : evalNum(tauxCom);
+  const r = {
+    camion:     evalArr(evalNum(ev.camion) * j),
+    gasoil:     evalArr(evalNum(ev.gasoil) * j),
+    abrasifs:   evalArr(evalNum(ev.abrasifs) * j * m),
+    techniciens:evalArr(deux ? 2 * evalNum(ev.tech2) * j : evalNum(ev.tech1) * j),
+    commission: evalArr(evalNum(ca) * taux / 100),
+    autres:     evalArr(evalNum(ev.autres)),
+    ca: evalNum(ca), taux
+  };
+  r.materiel = evalArr(r.camion + r.gasoil + r.abrasifs + r.autres);   // → « Coût matériel »
+  r.mainOeuvre = r.techniciens;                                          // → « Coût main d'œuvre »
+  r.total = evalArr(r.materiel + r.mainOeuvre + r.commission);
+  r.marge = evalArr(r.ca - r.total);
+  r.pct = r.ca > 0 ? r.marge / r.ca * 100 : null;
+  return r;
+}
+function evalCouleur(pct){
+  if(pct === null || pct === undefined) return { fond:"#EEF0F2", texte:"#4A5560", bord:"#C9CFD5", pastille:"⚪" };
+  if(pct >= EVAL_SEUIL_VERT)   return { fond:"#E6F4E6", texte:"#2F6B32", bord:"#4B9B4F", pastille:"🟢" };
+  if(pct >= EVAL_SEUIL_ORANGE) return { fond:"#FDF1DE", texte:"#8B5A00", bord:"#E8A33D", pastille:"🟠" };
+  return { fond:"#FBE5E3", texte:"#A3271C", bord:"#C0392B", pastille:"🔴" };
+}
+function evalEuro(x){ return (Number(x)||0).toLocaleString("fr-FR", { minimumFractionDigits:2, maximumFractionDigits:2 }) + " €"; }
+function evalPctTxt(p){ return p === null ? "—" : p.toLocaleString("fr-FR", { maximumFractionDigits:1 }) + " %"; }
+// Texte lisible (résumé) pour le champ « Matériel nécessaire » de la fiche chantier
+function evalResume(ev, r){
+  const j = evalNum(ev.jours);
+  const deux = Number(ev.techs) !== 1;
+  return [
+    `ÉVALUATION PRESTATION — ${String(j).replace(".", ",")} jour(s), ${deux ? "2 techniciens" : "1 technicien"}, ${evalNum(ev.machines)} machine(s)`,
+    `• Location camion : ${evalEuro(r.camion)}`,
+    `• Gasoil (compresseur + camion) : ${evalEuro(r.gasoil)}`,
+    `• Abrasifs : ${evalEuro(r.abrasifs)}`,
+    r.autres ? `• ${(ev.autresLib || "Autres frais").trim()} : ${evalEuro(r.autres)}` : "",
+    `• Techniciens : ${evalEuro(r.techniciens)}`,
+    `• Commission (${String(r.taux).replace(".", ",")} %) : ${evalEuro(r.commission)}`,
+    `Total coûts : ${evalEuro(r.total)} — Marge : ${evalEuro(r.marge)} (${evalPctTxt(r.pct)})`
+  ].filter(Boolean).join("\n");
+}
+/* Monte le pavé dans l'élément hostId.
+   opts.getCA()     : CA HT du chantier (valorisation)
+   opts.getTaux()   : facultatif — taux de commission imposé (sinon saisi dans le pavé)
+   opts.onChange(ev, r) : appelé à chaque modification */
+function evalMonter(hostId, ev, opts){
+  const host = document.getElementById(hostId);
+  if(!host) return;
+  host._ev = { ...EVAL_DEFAUT, ...(ev || {}) };
+  host._opts = opts || {};
+  host._modifie = false;
+  const p = hostId + "_";
+  const inp = (k, w, ph)=> `<input type="text" inputmode="decimal" data-ev="${k}" id="${p}${k}" placeholder="${ph ?? ""}" style="width:${w};padding:6px 7px;border:1px solid #C9CFD5;border-radius:5px;font-size:13px;text-align:right;background:#fff;color:#1F2933;">`;
+  const tauxImpose = typeof host._opts.getTaux === "function";
+  const lig = (lib, tarif, totalId)=> `
+    <tr>
+      <td style="padding:5px 4px;">${lib}</td>
+      <td style="padding:5px 4px;white-space:nowrap;">${tarif}</td>
+      <td style="padding:5px 4px;text-align:right;font-family:'IBM Plex Mono',monospace;white-space:nowrap;" id="${p}t_${totalId}">—</td>
+    </tr>`;
+  host.innerHTML = `
+  <div style="border:1px solid #C9CFD5;border-radius:8px;padding:10px 12px;background:#FAFBFC;color:#1F2933;">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
+      <label style="flex:1;min-width:90px;font-size:11.5px;font-weight:600;">Nombre de jours<br>${inp("jours","100%","ex. 3")}</label>
+      <label style="flex:1;min-width:120px;font-size:11.5px;font-weight:600;">Techniciens<br>
+        <select data-ev="techs" id="${p}techs" style="width:100%;padding:6px 7px;border:1px solid #C9CFD5;border-radius:5px;font-size:13px;background:#fff;color:#1F2933;">
+          <option value="2">2 techniciens</option><option value="1">1 technicien seul</option>
+        </select></label>
+      <label style="flex:1;min-width:80px;font-size:11.5px;font-weight:600;">Machines<br>${inp("machines","100%","1")}</label>
+    </div>
+    <div style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;font-size:12.5px;">
+      <thead><tr style="border-bottom:1px solid #C9CFD5;color:#4A5560;font-size:11px;text-transform:uppercase;">
+        <th style="text-align:left;padding:4px;">Poste</th><th style="text-align:left;padding:4px;">Tarif HT</th><th style="text-align:right;padding:4px;">Total</th></tr></thead>
+      <tbody>
+        ${lig("Location camion", `${inp("camion","64px")} €/jour`, "camion")}
+        ${lig("Gasoil (compresseur + camion)", `${inp("gasoil","64px")} €/jour`, "gasoil")}
+        ${lig("Abrasifs", `${inp("abrasifs","64px")} €/jour/machine`, "abrasifs")}
+        ${lig("Techniciens", `<span id="${p}box2">${inp("tech2","64px")} €/tech/jour</span><span id="${p}box1">${inp("tech1","64px")} €/jour</span>`, "techniciens")}
+        ${lig("Commission", tauxImpose ? `<span id="${p}tauxAff"></span> % du CA <span style="font-size:10.5px;color:#4A5560;">(taux de la fiche)</span>` : `${inp("commission","52px")} % du CA HT`, "commission")}
+        ${lig(`<input type="text" data-ev="autresLib" id="${p}autresLib" placeholder="Autres frais (péage…)" style="width:100%;min-width:110px;padding:6px 7px;border:1px solid #C9CFD5;border-radius:5px;font-size:12.5px;background:#fff;color:#1F2933;">`, `${inp("autres","64px","0")} €`, "autres")}
+      </tbody>
+    </table>
+    </div>
+    <div id="${p}res" style="margin-top:10px;border-radius:6px;padding:9px 11px;font-size:13px;"></div>
+  </div>`;
+  host.querySelectorAll("[data-ev]").forEach(el=>{
+    const k = el.dataset.ev;
+    el.value = host._ev[k] ?? "";
+    el.addEventListener(el.tagName === "SELECT" ? "change" : "input", ()=>{
+      host._ev[k] = k === "techs" ? Number(el.value) : el.value;
+      evalRafraichir(hostId, true);
+    });
+  });
+  evalRafraichir(hostId, false);
+}
+function evalRafraichir(hostId, modifie){
+  const host = document.getElementById(hostId);
+  if(!host || !host._ev) return null;
+  const ev = host._ev, o = host._opts || {}, p = hostId + "_";
+  const ca = typeof o.getCA === "function" ? o.getCA() : 0;
+  const taux = typeof o.getTaux === "function" ? o.getTaux() : undefined;
+  const r = evalCalcul(ev, ca, taux);
+  const deux = Number(ev.techs) !== 1;
+  const b2 = document.getElementById(p + "box2"), b1 = document.getElementById(p + "box1");
+  if(b2) b2.style.display = deux ? "" : "none";
+  if(b1) b1.style.display = deux ? "none" : "";
+  const ta = document.getElementById(p + "tauxAff");
+  if(ta) ta.textContent = String(r.taux).replace(".", ",");
+  ["camion","gasoil","abrasifs","techniciens","commission","autres"].forEach(k=>{
+    const td = document.getElementById(p + "t_" + k);
+    if(td) td.textContent = evalEuro(r[k]);
+  });
+  const c = evalCouleur(evalEstRemplie(ev) ? r.pct : null);
+  const res = document.getElementById(p + "res");
+  if(res){
+    res.style.cssText = `margin-top:10px;border-radius:6px;padding:9px 11px;font-size:13px;background:${c.fond};border:1px solid ${c.bord};color:${c.texte};`;
+    res.innerHTML = !evalEstRemplie(ev)
+      ? `Indiquez le nombre de jours prévus pour calculer la marge.`
+      : !r.ca
+        ? `Total des coûts : <b>${evalEuro(r.total)}</b><br>Renseignez la valorisation (CA HT) pour obtenir la marge.`
+        : `<div style="display:flex;justify-content:space-between;gap:8px;"><span>CA HT</span><b>${evalEuro(r.ca)}</b></div>
+           <div style="display:flex;justify-content:space-between;gap:8px;"><span>Total des coûts</span><b>− ${evalEuro(r.total)}</b></div>
+           <div style="display:flex;justify-content:space-between;gap:8px;font-size:15px;margin-top:4px;border-top:1px solid ${c.bord};padding-top:4px;">
+             <span>${c.pastille} Marge</span><b>${evalEuro(r.marge)} · ${evalPctTxt(r.pct)}</b></div>
+           <div style="font-size:11px;margin-top:3px;opacity:.85;">🟢 ≥ ${EVAL_SEUIL_VERT} % · 🟠 ≥ ${EVAL_SEUIL_ORANGE} % · 🔴 &lt; ${EVAL_SEUIL_ORANGE} %</div>`;
+  }
+  if(modifie) host._modifie = true;
+  if(typeof o.onChange === "function") o.onChange(ev, r, modifie);
+  return r;
+}
+function evalValeur(hostId){ const h = document.getElementById(hostId); return h && h._ev ? { ...h._ev } : null; }
+function evalModifie(hostId){ const h = document.getElementById(hostId); return !!(h && h._modifie); }
+
 
 let cfg = JSON.parse(localStorage.getItem("crmLeadsConfig") || "{}");
 if(!cfg.commercials){
@@ -1579,16 +1743,35 @@ async function sendToChantiers(leadId){
     ProchaineRelance: today(),
     CreneauRelance: "Début de matinée",
   };
+  // Évaluation de la prestation → pavé « Matériel & coûts » de Gestion Chantiers
+  const ev = evalLire(l[FIELD.evaluation]);
+  if(l[FIELD.evaluation] && evalEstRemplie(ev)){
+    const r = evalCalcul(ev, l[FIELD.valo]);
+    fields.CoutMateriel = r.materiel;
+    fields.CoutMainOeuvre = r.mainOeuvre;
+    fields.TauxCommission = r.taux;
+    fields.MaterielNecessaire = evalResume(ev, r);
+    fields.EvaluationPrestation = JSON.stringify(ev);
+  }
   try{
     const url = `https://api.airtable.com/v0/${cfg.base}/${encodeURIComponent(cfg.chantiersTable)}`;
-    const res = await fetch(url, {
+    const envoyer = (f)=> fetch(url, {
       method:"POST",
       headers:{ Authorization:`Bearer ${cfg.pat}`, "Content-Type":"application/json" },
-      body: JSON.stringify({ fields, typecast:true })
+      body: JSON.stringify({ fields: f, typecast:true })
     });
+    let res = await envoyer(fields);
     if(!res.ok){
       const errBody = await res.text();
-      throw new Error(errBody);
+      if("EvaluationPrestation" in fields && errBody.includes("EvaluationPrestation")){
+        // champ pas encore créé dans la table Chantiers : on envoie quand même les coûts calculés
+        const reste = { ...fields }; delete reste.EvaluationPrestation;
+        res = await envoyer(reste);
+        if(!res.ok) throw new Error(await res.text());
+        toast("⚠ Champ « EvaluationPrestation » absent de la table Chantiers : coûts transmis, détail non modifiable");
+      } else {
+        throw new Error(errBody);
+      }
     }
     const created = await res.json();
     toast("📤 Chantier envoyé vers le programme de suivi");
@@ -1623,7 +1806,14 @@ async function saveLead(payload, id){
       // on enregistre quand même le reste de la fiche, puis on explique précisément quoi corriger.
       const champsPassage = [FIELD.passageTech, FIELD.datePassage, FIELD.consignePassage];
       const enCause = champsPassage.filter(f=> f in payload && errBody.includes(f));
-      if(enCause.length){
+      if(FIELD.evaluation in payload && errBody.includes(FIELD.evaluation)){
+        // Champ « EvaluationPrestation » pas encore créé dans Airtable : on enregistre le reste
+        const reste = {...payload}; delete reste[FIELD.evaluation];
+        const res2 = await fetch(url, { method: id ? "PATCH" : "POST", headers:{ Authorization:`Bearer ${cfg.pat}`, "Content-Type":"application/json" }, body: JSON.stringify({ fields: reste, typecast:true }) });
+        if(!res2.ok) throw new Error(`Airtable ${res2.status} — ${await res2.text()}`);
+        saved = await res2.json();
+        alert("La fiche a été enregistrée, SANS l'évaluation de la prestation.\n\nCréez dans la table des leads d'Airtable un champ nommé exactement « EvaluationPrestation » (type Texte long), puis refaites l'évaluation.");
+      } else if(enCause.length){
         const reste = {...payload}; champsPassage.forEach(f=> delete reste[f]);
         const res2 = await fetch(url, { method: id ? "PATCH" : "POST", headers:{ Authorization:`Bearer ${cfg.pat}`, "Content-Type":"application/json" }, body: JSON.stringify({ fields: reste, typecast:true }) });
         if(!res2.ok) throw new Error(`Airtable ${res2.status} — ${await res2.text()}`);
@@ -3171,6 +3361,17 @@ function openLeadModal(id){
   $("f_statut").value = l?.[FIELD.statut] || STATUTS[0].key;
   statutFormPrecedent = $("f_statut").value;
   $("f_valorisation").value = l?.[FIELD.valo] ?? "";
+  {
+    const ev = evalLire(l?.[FIELD.evaluation]);
+    evalMonter("evalLead", ev, {
+      getCA: ()=> evalNum($("f_valorisation").value),
+      onChange: (e, r)=>{
+        const c = evalCouleur(r.ca ? r.pct : null);
+        $("evalLeadResume").textContent = evalEstRemplie(e) && r.ca ? `${c.pastille} ${evalEuro(r.marge)} · ${evalPctTxt(r.pct)}` : "";
+      }
+    });
+    $("evalLeadBox").open = evalEstRemplie(ev);
+  }
   $("f_date").value = l?.[FIELD.date] || "";
   $("f_relance").value = l?.[FIELD.relance] || "";
   $("f_creneau").value = l?.[FIELD.creneau] || "Début de matinée";
@@ -3253,6 +3454,11 @@ function readLeadForm(){
       return (coche || prev[FIELD.demandeDevisLucas]) ? { [FIELD.demandeDevisLucas]: coche } : {};
     })(),
     ...(dlHistoriqueModifie ? { [FIELD.devisLucasHisto]: JSON.stringify(dlHistoriqueForm) } : {}),
+    ...(()=>{
+      // Évaluation envoyée seulement si elle a été utilisée (champ Airtable "EvaluationPrestation")
+      const prev = editingId ? (leads.find(x=>x.id===editingId) || {}) : {};
+      return (evalModifie("evalLead") || prev[FIELD.evaluation]) ? { [FIELD.evaluation]: JSON.stringify(evalValeur("evalLead")) } : {};
+    })(),
     [FIELD.sansAcompte]: $("f_sans_acompte").checked,
     [FIELD.prestationLocation]: $("f_prestation_location").checked,
     [FIELD.notes]: $("f_notes").value.trim(),
@@ -3891,6 +4097,7 @@ function fermerDemandeDevisLucas(genere){
   dlEditionK = null;
   if(dlResolve){ const r = dlResolve; dlResolve = null; r(genere); }
 }
+$("f_valorisation").addEventListener("input", ()=> evalRafraichir("evalLead", false));
 ["dl_civilite","dl_client","dl_adresse","dl_titre","dl_prestation","dl_dechets","dl_tva","dl_acompte","dl_arrhes_montant","dl_solde_montant","dl_caution","dl_tests","dl_remarque"].forEach(id=>{
   $(id).addEventListener("input", dlSync);
   $(id).addEventListener("change", dlSync);
