@@ -1121,7 +1121,7 @@ function evalHebergementGrille(ev){
   if(g[j] !== undefined) return g[j];
   return g[5] + (j - 5) * (g[5] - g[4]);
 }
-const EVAL_SEUIL_VERT = 40, EVAL_SEUIL_ORANGE = 30;   // % de marge
+const EVAL_SEUIL_VERT = 20, EVAL_SEUIL_ORANGE = 16;   // % de marge
 function evalNum(v){ const n = Number(String(v ?? "").replace(/\s/g,"").replace(",", ".")); return isFinite(n) ? n : 0; }
 function evalLire(json){
   try{ const o = JSON.parse(json || "{}"); return { ...EVAL_DEFAUT, ...(o && typeof o === "object" ? o : {}) }; }
