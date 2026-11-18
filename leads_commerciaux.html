@@ -4444,7 +4444,7 @@ function dlSignatureLoca(commercial){
   };
 }
 const LOCA_PLOMB_IMG = LOCA_BASE + "alerte_plomb.jpg";
-const LOCA_PLOMB_TEXTE = "⚠ ATTENTION : DANGER DU PLOMB ⚠\nPeintures anciennes (avant 1949) : faites réaliser un diagnostic plomb AVANT tout décapage. Les poussières de plomb sont toxiques : ne décapez jamais sans protection respiratoire adaptée.";
+const LOCA_PLOMB_TEXTE = "⚠ ATTENTION : DANGER DU PLOMB ⚠\nPeintures anciennes (avant 1970) : faites réaliser un diagnostic plomb AVANT tout décapage. Les poussières de plomb sont toxiques : ne décapez jamais, même si votre protection vous semble adaptée !";
 // Retire l'ancienne signature texte « AEROGOMM Grand Ouest » en fin de message
 function dlCorpsLoca(corps){ return (corps || "").replace(/\n*\s*AEROGOMM Grand Ouest\s*$/i, "").replace(/\s+$/, ""); }
 // Copie la signature (images) dans le presse-papiers : il suffit de faire Ctrl+V à la fin du mail dans Thunderbird
