@@ -633,6 +633,14 @@
         <label>Message (modifiable — il sera copié dans les notes de la fiche)</label>
         <textarea id="ed_corps" style="min-height:170px;"></textarea>
       </div>
+      <div id="ed_sigloca" style="display:none;border:1px dashed #C00000;border-radius:6px;padding:10px;background:#FFF8F8;">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+          <b style="color:#C00000;font-size:13px;">Signature LOCA'DECAP + alerte plomb (devis de location)</b>
+          <button type="button" class="btn btn-ghost" id="btnCopierSigLoca" style="margin-left:auto;color:#C00000;border-color:#C00000;padding:4px 10px;font-size:12px;">📋 Copier la signature</button>
+        </div>
+        <img src="signature_locadecap.png" alt="Signature LOCA'DECAP" style="max-width:100%;display:block;">
+        <img src="alerte_plomb.jpg" alt="Attention : danger du plomb" style="max-width:240px;display:block;margin-top:8px;">
+      </div>
       <p class="hint" id="ed_aide" style="margin:0;"></p>
     </div>
     <div class="mfoot">
@@ -4415,6 +4423,44 @@ async function dlFicheLoca(){
     return null;
   }
 }
+// ---- Signature LOCA'DECAP + alerte plomb (mails des devis de location) ----
+// Les images sont sur GitHub, à côté de ce fichier : pour les changer, remplacer les fichiers (même nom).
+const LOCA_BASE = "https://aerogomm.github.io/crmcommerciaux/";
+const LOCA_SIG_IMG = LOCA_BASE + "signature_locadecap.png";
+const LOCA_PLOMB_IMG = LOCA_BASE + "alerte_plomb.jpg";
+const LOCA_SIG_TEXTE = "David GUENAUD\nAssistance client — LOCA'DECAP\nTél. 06 42 12 31 55\naerograndouest@gmail.com\nwww.locadecap.fr";
+const LOCA_PLOMB_TEXTE = "⚠ ATTENTION : DANGER DU PLOMB ⚠\nPeintures anciennes (avant 1949) : faites réaliser un diagnostic plomb AVANT tout décapage. Les poussières de plomb sont toxiques : ne décapez jamais sans protection respiratoire adaptée.";
+// Retire l'ancienne signature texte « AEROGOMM Grand Ouest » en fin de message
+function dlCorpsLoca(corps){ return (corps || "").replace(/\n*\s*AEROGOMM Grand Ouest\s*$/i, "").replace(/\s+$/, ""); }
+// Copie la signature (images) dans le presse-papiers : il suffit de faire Ctrl+V à la fin du mail dans Thunderbird
+async function dlCopierSignatureLoca(){
+  const html = `<br><img src="${LOCA_SIG_IMG}" width="600" alt="LOCA'DECAP — David GUENAUD — 06 42 12 31 55" style="display:block;border:0;"><br>`
+    + `<img src="${LOCA_PLOMB_IMG}" width="480" alt="Attention : danger du plomb" style="display:block;border:0;"><br>`;
+  const texte = "\n" + LOCA_SIG_TEXTE + "\n\n" + LOCA_PLOMB_TEXTE;
+  try{
+    await navigator.clipboard.write([ new ClipboardItem({
+      "text/html": new Blob([html], { type:"text/html" }),
+      "text/plain": new Blob([texte], { type:"text/plain" })
+    }) ]);
+    return true;
+  }catch(err){
+    console.warn("Copie de la signature impossible", err);
+    return false;
+  }
+}
+async function dlImagePlomb(){
+  try{
+    const r = await fetch("alerte_plomb.jpg", { cache:"no-cache" });
+    if(!r.ok) throw new Error("HTTP " + r.status);
+    return new File([await r.blob()], "ATTENTION - danger du plomb.jpg", { type:"image/jpeg" });
+  }catch(err){ console.warn("Image plomb introuvable", err); return null; }
+}
+$("btnCopierSigLoca").addEventListener("click", async ()=>{
+  toast(await dlCopierSignatureLoca()
+    ? "📋 Signature copiée — dans Thunderbird, cliquez à la fin du message puis Ctrl+V"
+    : "⚠ Copie impossible — réessayez");
+});
+
 // ---- Envoi au client ----
 let dlEnvoiCtx = null; // { leadId, k, dem, fichiers }
 function dlMobile(){ return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent); }
@@ -4432,7 +4478,9 @@ function dlOuvrirEnvoi(leadId, k, dem, fichiers){
   dlEnvoiCtx = { leadId, k, dem, fichiers: (fichiers && fichiers.length) ? fichiers : null };
   $("ed_a").value = email;
   $("ed_objet").value = objet;
-  $("ed_corps").value = R(cfg.emailDevisCorps || DEVIS_CORPS_DEFAUT);
+  const loca = dlAvecLocation(dem);
+  $("ed_corps").value = loca ? dlCorpsLoca(R(cfg.emailDevisCorps || DEVIS_CORPS_DEFAUT)) : R(cfg.emailDevisCorps || DEVIS_CORPS_DEFAUT);
+  $("ed_sigloca").style.display = loca ? "block" : "none";
   $("ed_statut").innerHTML = dlEnvoiCtx.fichiers
     ? `✅ Devis n° <b>${escapeHtml(nums)}</b> prêt${dlEnvoiCtx.fichiers.length > 1 ? ` — ${dlEnvoiCtx.fichiers.length} PDF (un par enseigne), joints à la fiche` : " — le PDF est joint à la fiche"} (📎 Pièces jointes).`
     : `📄 Devis n° <b>${escapeHtml(nums)}</b>. Le PDF sera préparé au moment de l'envoi.`;
@@ -4440,6 +4488,9 @@ function dlOuvrirEnvoi(leadId, k, dem, fichiers){
   $("ed_aide").textContent = dlMobile()
     ? "Sur téléphone : le menu de partage s'ouvre avec le PDF déjà joint et le message. Choisissez Gmail, puis collez l'adresse du client dans « À » (elle est copiée automatiquement)."
     : "Sur ordinateur : le PDF est téléchargé et Thunderbird s'ouvre avec le message prêt. Choisissez l'expéditeur aerograndouest@gmail.com, glissez le PDF depuis la barre de téléchargements dans le mail, puis Envoyer.";
+  if(loca) $("ed_aide").textContent += dlMobile()
+    ? " L'alerte plomb est jointe en image et la signature LOCA'DECAP est ajoutée au message."
+    : " Signature LOCA'DECAP : dans Thunderbird, cliquez à la fin du message puis faites Ctrl+V — la signature et l'alerte plomb s'ajoutent (elles sont copiées automatiquement).";
   $("envoiDevisOverlay").classList.add("open");
 }
 function dlFermerEnvoi(){ $("envoiDevisOverlay").classList.remove("open"); }
@@ -4476,6 +4527,9 @@ $("btnEnvoiClient").addEventListener("click", async ()=>{
   const ctx = dlEnvoiCtx; if(!ctx) return;
   const a = $("ed_a").value.trim(), objet = $("ed_objet").value.trim(), corps = $("ed_corps").value;
   if(!/^\S+@\S+\.\S+$/.test(a)){ toast("Indiquez une adresse email valide pour le client"); return; }
+  const loca = dlAvecLocation(ctx.dem);
+  // Ordinateur : signature LOCA'DECAP + alerte plomb copiées tout de suite (à coller avec Ctrl+V dans Thunderbird)
+  const sigCopiee = (loca && !dlMobile()) ? dlCopierSignatureLoca() : Promise.resolve(false);
   if(!ctx.fichiers){
     veil(true);
     try{ ctx.fichiers = await dlFabriquerFichiers(ctx.dem); }
@@ -4490,13 +4544,19 @@ $("btnEnvoiClient").addEventListener("click", async ()=>{
     veil(false);
     if(fiche) aJoindre.push(fiche);
   }
+  // Téléphone : l'alerte plomb part en image jointe, la signature LOCA'DECAP en texte
+  if(loca && dlMobile() && aJoindre){
+    const img = await dlImagePlomb();
+    if(img) aJoindre.push(img);
+  }
+  const corpsMobile = loca ? corps.replace(/\s+$/, "") + "\n\n" + LOCA_SIG_TEXTE + "\n\n" + LOCA_PLOMB_TEXTE : corps;
   const noms = (aJoindre || []).map(f=> f.name);
   // Téléphone : partage natif avec le(s) PDF en pièce jointe (Gmail…)
   if(dlMobile() && aJoindre && navigator.canShare){
     if(navigator.canShare({ files: aJoindre })){
       try{ await navigator.clipboard.writeText(a); }catch(e){}
       try{
-        await navigator.share({ files: aJoindre, title: objet, text: corps });
+        await navigator.share({ files: aJoindre, title: objet, text: corpsMobile });
         dlFermerEnvoi();
         dlConfirmerEnvoi(ctx, a, objet, corps);
         return;
@@ -4514,6 +4574,9 @@ $("btnEnvoiClient").addEventListener("click", async ()=>{
   toast(noms.length
     ? `📎 ${noms.map(n=> "« " + n + " »").join(" et ")} ${noms.length > 1 ? "sont" : "est"} dans vos Téléchargements — glissez-${noms.length > 1 ? "les" : "le"} dans le mail`
     : "Mail ouvert — le PDF n'a pas pu être préparé : utilisez « Voir / imprimer »");
+  if(loca) sigCopiee.then(ok=> setTimeout(()=> toast(ok
+    ? "📋 Signature LOCA'DECAP + alerte plomb copiées : cliquez à la fin du message dans Thunderbird puis Ctrl+V"
+    : "⚠ Signature non copiée : utilisez « 📋 Copier la signature » dans la fenêtre d'envoi"), 3500));
   dlFermerEnvoi();
   dlAuRetour(()=> dlConfirmerEnvoi(ctx, a, objet, corps));
 });
