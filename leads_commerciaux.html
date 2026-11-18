@@ -638,7 +638,7 @@
           <b style="color:#C00000;font-size:13px;">Signature LOCA'DECAP + alerte plomb (devis de location)</b>
           <button type="button" class="btn btn-ghost" id="btnCopierSigLoca" style="margin-left:auto;color:#C00000;border-color:#C00000;padding:4px 10px;font-size:12px;">📋 Copier la signature</button>
         </div>
-        <img src="signature_locadecap.png" alt="Signature LOCA'DECAP" style="max-width:100%;display:block;">
+        <img id="ed_sigloca_img" src="signature_locadecap.png" alt="Signature LOCA'DECAP" style="max-width:100%;display:block;">
         <img src="alerte_plomb.jpg" alt="Attention : danger du plomb" style="max-width:240px;display:block;margin-top:8px;">
       </div>
       <p class="hint" id="ed_aide" style="margin:0;"></p>
@@ -4426,17 +4426,33 @@ async function dlFicheLoca(){
 // ---- Signature LOCA'DECAP + alerte plomb (mails des devis de location) ----
 // Les images sont sur GitHub, à côté de ce fichier : pour les changer, remplacer les fichiers (même nom).
 const LOCA_BASE = "https://aerogomm.github.io/crmcommerciaux/";
-const LOCA_SIG_IMG = LOCA_BASE + "signature_locadecap.png";
+// Une image de signature par commercial (fichier signature_locadecap_prenom-nom.png sur GitHub).
+// Pour ajouter un commercial : déposer son image et ajouter une ligne ici (le téléphone vient de DEVIS_SUIVI_PAR).
+const LOCA_SIG_FICHIERS = {
+  "David GUENAUD":  "signature_locadecap_david-guenaud.png",
+  "Jérôme GOUSSOT": "signature_locadecap_jerome-goussot.png"
+};
+const LOCA_SIG_DEFAUT = "signature_locadecap.png"; // « L'équipe LOCA'DECAP » si le commercial n'a pas d'image
+function dlSignatureLoca(commercial){
+  const suivi = dlSuiviPar(commercial);
+  const fichier = (suivi && LOCA_SIG_FICHIERS[suivi.nom]) || LOCA_SIG_DEFAUT;
+  const nom = (suivi && LOCA_SIG_FICHIERS[suivi.nom]) ? suivi.nom : "L'équipe LOCA'DECAP";
+  const tel = (suivi && LOCA_SIG_FICHIERS[suivi.nom]) ? suivi.tel.replaceAll(".", " ") : "06 42 12 31 55";
+  return {
+    fichier, img: LOCA_BASE + fichier, nom, tel,
+    texte: `${nom}\nAssistance client — LOCA'DECAP\nTél. ${tel}\naerograndouest@gmail.com\nwww.locadecap.fr`
+  };
+}
 const LOCA_PLOMB_IMG = LOCA_BASE + "alerte_plomb.jpg";
-const LOCA_SIG_TEXTE = "David GUENAUD\nAssistance client — LOCA'DECAP\nTél. 06 42 12 31 55\naerograndouest@gmail.com\nwww.locadecap.fr";
 const LOCA_PLOMB_TEXTE = "⚠ ATTENTION : DANGER DU PLOMB ⚠\nPeintures anciennes (avant 1949) : faites réaliser un diagnostic plomb AVANT tout décapage. Les poussières de plomb sont toxiques : ne décapez jamais sans protection respiratoire adaptée.";
 // Retire l'ancienne signature texte « AEROGOMM Grand Ouest » en fin de message
 function dlCorpsLoca(corps){ return (corps || "").replace(/\n*\s*AEROGOMM Grand Ouest\s*$/i, "").replace(/\s+$/, ""); }
 // Copie la signature (images) dans le presse-papiers : il suffit de faire Ctrl+V à la fin du mail dans Thunderbird
-async function dlCopierSignatureLoca(){
-  const html = `<br><img src="${LOCA_SIG_IMG}" width="600" alt="LOCA'DECAP — David GUENAUD — 06 42 12 31 55" style="display:block;border:0;"><br>`
+async function dlCopierSignatureLoca(sig){
+  sig = sig || dlSignatureLoca("");
+  const html = `<br><img src="${sig.img}" width="600" alt="LOCA'DECAP — ${escapeHtml(sig.nom)} — ${sig.tel}" style="display:block;border:0;"><br>`
     + `<img src="${LOCA_PLOMB_IMG}" width="480" alt="Attention : danger du plomb" style="display:block;border:0;"><br>`;
-  const texte = "\n" + LOCA_SIG_TEXTE + "\n\n" + LOCA_PLOMB_TEXTE;
+  const texte = "\n" + sig.texte + "\n\n" + LOCA_PLOMB_TEXTE;
   try{
     await navigator.clipboard.write([ new ClipboardItem({
       "text/html": new Blob([html], { type:"text/html" }),
@@ -4456,7 +4472,7 @@ async function dlImagePlomb(){
   }catch(err){ console.warn("Image plomb introuvable", err); return null; }
 }
 $("btnCopierSigLoca").addEventListener("click", async ()=>{
-  toast(await dlCopierSignatureLoca()
+  toast(await dlCopierSignatureLoca(dlEnvoiCtx && dlEnvoiCtx.sig)
     ? "📋 Signature copiée — dans Thunderbird, cliquez à la fin du message puis Ctrl+V"
     : "⚠ Copie impossible — réessayez");
 });
@@ -4481,6 +4497,10 @@ function dlOuvrirEnvoi(leadId, k, dem, fichiers){
   const loca = dlAvecLocation(dem);
   $("ed_corps").value = loca ? dlCorpsLoca(R(cfg.emailDevisCorps || DEVIS_CORPS_DEFAUT)) : R(cfg.emailDevisCorps || DEVIS_CORPS_DEFAUT);
   $("ed_sigloca").style.display = loca ? "block" : "none";
+  // Signature au nom du commercial du devis (sinon celui de la fiche)
+  const commercial = dem.commercial || (ouvert ? ($("f_commercial") ? $("f_commercial").value : "") : (l[FIELD.commercial] || ""));
+  dlEnvoiCtx.sig = dlSignatureLoca(commercial);
+  $("ed_sigloca_img").src = dlEnvoiCtx.sig.fichier;
   $("ed_statut").innerHTML = dlEnvoiCtx.fichiers
     ? `✅ Devis n° <b>${escapeHtml(nums)}</b> prêt${dlEnvoiCtx.fichiers.length > 1 ? ` — ${dlEnvoiCtx.fichiers.length} PDF (un par enseigne), joints à la fiche` : " — le PDF est joint à la fiche"} (📎 Pièces jointes).`
     : `📄 Devis n° <b>${escapeHtml(nums)}</b>. Le PDF sera préparé au moment de l'envoi.`;
@@ -4529,7 +4549,8 @@ $("btnEnvoiClient").addEventListener("click", async ()=>{
   if(!/^\S+@\S+\.\S+$/.test(a)){ toast("Indiquez une adresse email valide pour le client"); return; }
   const loca = dlAvecLocation(ctx.dem);
   // Ordinateur : signature LOCA'DECAP + alerte plomb copiées tout de suite (à coller avec Ctrl+V dans Thunderbird)
-  const sigCopiee = (loca && !dlMobile()) ? dlCopierSignatureLoca() : Promise.resolve(false);
+  const sig = ctx.sig || dlSignatureLoca(ctx.dem.commercial || "");
+  const sigCopiee = (loca && !dlMobile()) ? dlCopierSignatureLoca(sig) : Promise.resolve(false);
   if(!ctx.fichiers){
     veil(true);
     try{ ctx.fichiers = await dlFabriquerFichiers(ctx.dem); }
@@ -4549,7 +4570,7 @@ $("btnEnvoiClient").addEventListener("click", async ()=>{
     const img = await dlImagePlomb();
     if(img) aJoindre.push(img);
   }
-  const corpsMobile = loca ? corps.replace(/\s+$/, "") + "\n\n" + LOCA_SIG_TEXTE + "\n\n" + LOCA_PLOMB_TEXTE : corps;
+  const corpsMobile = loca ? corps.replace(/\s+$/, "") + "\n\n" + sig.texte + "\n\n" + LOCA_PLOMB_TEXTE : corps;
   const noms = (aJoindre || []).map(f=> f.name);
   // Téléphone : partage natif avec le(s) PDF en pièce jointe (Gmail…)
   if(dlMobile() && aJoindre && navigator.canShare){
