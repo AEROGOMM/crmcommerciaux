@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mon écran — AEROGOMM</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0D1117;--surface:#161B22;--surface2:#1C2128;--surface3:#21262D;
+    --border:#30363D;--border2:#484F58;--text:#E6EDF3;--muted:#8B949E;--accent:#58A6FF;
+    --leads:#58A6FF;--leads-bg:#0D2240;
+    --chant:#E07B39;--chant-bg:#2D1800;
+    --tiers:#A87DC4;--tiers-bg:#241535;
+    --vente:#2EC4B6;--vente-bg:#0D2A28;
+    --ok:#3FB27F;--late:#E05252;--late-bg:#2D0C0C;--warn:#D4A017;
+    --radius:8px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;}
+  .mono{font-family:'DM Mono',monospace;}
+
+  /* ---------- En-tête ---------- */
+  .app-header{position:sticky;top:0;z-index:20;height:60px;background:var(--surface);border-bottom:1px solid var(--border);
+    display:flex;align-items:center;justify-content:space-between;padding:0 20px;gap:12px;}
+  .brand{display:flex;align-items:center;gap:10px;min-width:0;}
+  .brand-logo{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--vente));
+    display:flex;align-items:center;justify-content:center;font-weight:800;color:#000;font-size:15px;flex-shrink:0;}
+  .brand h1{font-size:17px;font-weight:800;letter-spacing:.3px;white-space:nowrap;}
+  .brand .sub{font-size:11px;color:var(--muted);white-space:nowrap;}
+  .header-actions{display:flex;gap:8px;align-items:center;}
+  .clock{font-family:'DM Mono',monospace;font-size:13px;color:var(--muted);margin-right:6px;}
+  select,input{background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;
+    padding:7px 10px;font-family:'Syne',sans-serif;font-size:13px;}
+  .btn{border:none;border-radius:6px;padding:8px 12px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;
+    display:inline-flex;align-items:center;gap:6px;transition:opacity .15s,transform .1s;}
+  .btn:active{transform:scale(.97);}
+  .btn-primary{background:var(--accent);color:#000;}
+  .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted);}
+  .btn-ghost:hover{color:var(--text);border-color:var(--border2);}
+
+  .wrap{padding:18px 20px 40px;max-width:1600px;margin:0 auto;}
+
+  /* ---------- Bandeau KPI ---------- */
+  .greet{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+  .greet h2{font-size:22px;font-weight:800;}
+  .greet .date{color:var(--muted);font-size:13px;text-transform:capitalize;}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
+  .kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;}
+  .kpi .lbl{font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;}
+  .kpi .val{font-family:'DM Mono',monospace;font-size:28px;font-weight:500;margin-top:4px;}
+  .kpi .hint{font-size:11px;color:var(--muted);margin-top:2px;}
+  .kpi.late .val{color:var(--late);}
+  .kpi.today .val{color:var(--accent);}
+  .kpi.agenda .val{color:var(--warn);}
+  .kpi.tomorrow .val{color:var(--muted);}
+
+  /* ---------- Grille des mini-écrans ---------- */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;
+    min-height:280px;max-height:560px;overflow:hidden;border-top:3px solid var(--c);}
+  .panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;
+    background:var(--cbg);border-bottom:1px solid var(--border);}
+  .panel-title{display:flex;align-items:center;gap:10px;min-width:0;}
+  .panel-title .ico{font-size:18px;}
+  .panel-title h3{font-size:15px;font-weight:800;color:var(--c);white-space:nowrap;}
+  .count{font-family:'DM Mono',monospace;background:var(--c);color:#000;border-radius:20px;padding:1px 9px;font-size:13px;font-weight:500;}
+  .count.zero{background:var(--surface3);color:var(--muted);}
+  .count-late{font-family:'DM Mono',monospace;background:var(--late-bg);color:var(--late);border:1px solid var(--late);
+    border-radius:20px;padding:0 8px;font-size:12px;white-space:nowrap;}
+  .open-link{color:var(--muted);text-decoration:none;font-size:12px;font-weight:700;border:1px solid var(--border);
+    border-radius:6px;padding:5px 9px;white-space:nowrap;}
+  .open-link:hover{color:var(--c);border-color:var(--c);}
+  .panel-body{overflow-y:auto;padding:6px 0 10px;flex:1;}
+  .panel-foot{border-top:1px solid var(--border);padding:7px 14px;font-size:11px;color:var(--muted);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+
+  .sec{font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;padding:10px 14px 4px;
+    display:flex;align-items:center;gap:8px;}
+  .sec .n{font-family:'DM Mono',monospace;color:var(--c);letter-spacing:0;}
+  .empty{padding:24px 14px;text-align:center;color:var(--muted);font-size:13px;}
+  .empty .big{font-size:26px;display:block;margin-bottom:6px;}
+
+  .item{display:flex;align-items:flex-start;gap:10px;padding:8px 14px;border-left:3px solid transparent;}
+  .item:hover{background:var(--surface2);border-left-color:var(--c);}
+  .item.is-late{border-left-color:var(--late);}
+  .item-main{flex:1;min-width:0;}
+  .item-name{font-weight:700;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .item-sub{font-size:12px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px;}
+  .tag{font-size:10.5px;padding:1px 7px;border-radius:10px;background:var(--surface3);color:var(--muted);white-space:nowrap;}
+  .tag.late{background:var(--late-bg);color:var(--late);}
+  .tag.cren{background:var(--cbg);color:var(--c);}
+  .tag.who{border:1px solid var(--border);background:transparent;}
+  .tag.money{font-family:'DM Mono',monospace;color:var(--ok);background:transparent;border:1px solid #1f4a35;}
+  .item-actions{display:flex;gap:5px;flex-shrink:0;align-items:center;}
+  .mini{background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 7px;
+    font-size:11.5px;cursor:pointer;text-decoration:none;font-family:'Syne',sans-serif;font-weight:700;white-space:nowrap;}
+  .mini:hover{color:var(--text);border-color:var(--c);}
+  .mini.done:hover{color:var(--ok);border-color:var(--ok);}
+
+  /* ---------- États ---------- */
+  .loading{opacity:.55;pointer-events:none;}
+  .err{background:var(--late-bg);color:var(--late);border:1px solid var(--late);border-radius:6px;margin:10px 14px;padding:8px 10px;font-size:12px;}
+  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--surface3);border:1px solid var(--border2);
+    color:var(--text);padding:10px 16px;border-radius:8px;font-size:13px;z-index:50;opacity:0;transition:opacity .25s;pointer-events:none;}
+  .toast.show{opacity:1;}
+
+  /* ---------- Configuration ---------- */
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:40;padding:16px;}
+  .modal-bg.show{display:flex;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:10px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:20px;}
+  .modal h3{font-size:17px;font-weight:800;margin-bottom:4px;}
+  .modal p.help{color:var(--muted);font-size:12px;margin-bottom:14px;line-height:1.5;}
+  .field{margin-bottom:12px;}
+  .field label{display:block;font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:5px;}
+  .field input{width:100%;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;}
+  details summary{cursor:pointer;color:var(--muted);font-size:12px;font-weight:700;margin:6px 0 10px;}
+
+  @media (max-width:1000px){ .grid{grid-template-columns:1fr;} .panel{max-height:none;} }
+  @media (max-width:700px){
+    .kpis{grid-template-columns:1fr 1fr;}
+    .app-header{padding:0 12px;}
+    .brand .sub,.clock{display:none;}
+    .wrap{padding:14px 12px 30px;}
+    .greet h2{font-size:19px;}
+    .kpi .val{font-size:24px;}
+    #btnRefresh .txt{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand">
+    <div class="brand-logo">A</div>
+    <div>
+      <h1>Mon écran</h1>
+      <div class="sub">Tâches du jour — tous les CRM</div>
+    </div>
+  </div>
+  <div class="header-actions">
+    <span class="clock" id="clock">--:--</span>
+    <select id="selCommercial" title="Filtrer par commercial">
+      <option value="Tous">Tous</option>
+      <option value="David">David</option>
+      <option value="Carole">Carole</option>
+      <option value="Jérôme">Jérôme</option>
+    </select>
+    <button class="btn btn-primary" id="btnRefresh" title="Actualiser">⟳ <span class="txt">Actualiser</span></button>
+    <button class="btn btn-ghost" id="btnConfig" title="Configuration">⚙</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="greet">
+    <h2 id="greetTxt">Bonjour David</h2>
+    <span class="date" id="dateTxt"></span>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi today"><div class="lbl">À faire aujourd'hui</div><div class="val" id="kToday">–</div><div class="hint">relances prévues ce jour</div></div>
+    <div class="kpi late"><div class="lbl">En retard</div><div class="val" id="kLate">–</div><div class="hint">relances dépassées</div></div>
+    <div class="kpi agenda"><div class="lbl">Agenda du jour</div><div class="val" id="kAgenda">–</div><div class="hint">RDV, démos, interventions</div></div>
+    <div class="kpi tomorrow"><div class="lbl">Demain</div><div class="val" id="kTomorrow">–</div><div class="hint">relances déjà prévues</div></div>
+  </div>
+
+  <div class="grid">
+    <section class="panel" id="p-leads" style="--c:var(--leads);--cbg:var(--leads-bg)"></section>
+    <section class="panel" id="p-chantiers" style="--c:var(--chant);--cbg:var(--chant-bg)"></section>
+    <section class="panel" id="p-tiers" style="--c:var(--tiers);--cbg:var(--tiers-bg)"></section>
+    <section class="panel" id="p-vente" style="--c:var(--vente);--cbg:var(--vente-bg)"></section>
+  </div>
+</div>
+
+<!-- Configuration -->
+<div class="modal-bg" id="modalCfg">
+  <div class="modal">
+    <h3>⚙ Configuration</h3>
+    <p class="help">Ces réglages sont gardés sur cet appareil uniquement (c'est normal de devoir les saisir une fois par appareil).
+      Si la Trésorerie est déjà configurée sur cet appareil, le jeton est repris automatiquement.</p>
+    <div class="field"><label>Jeton Airtable (PAT)</label><input id="cfgToken" type="password" placeholder="pat..." autocomplete="off"></div>
+    <div class="field"><label>ID de la base Airtable</label><input id="cfgBase" placeholder="app..."></div>
+    <div class="field"><label>Actualisation automatique (minutes, 0 = jamais)</label><input id="cfgAuto" type="number" min="0" step="1"></div>
+    <details>
+      <summary>Liens vers les CRM (bouton « Ouvrir »)</summary>
+      <div class="field"><label>Leads commerciaux</label><input id="cfgUrlLeads"></div>
+      <div class="field"><label>Gestion chantiers</label><input id="cfgUrlChantiers"></div>
+      <div class="field"><label>Tiers externes</label><input id="cfgUrlTiers"></div>
+      <div class="field"><label>Vente matériel</label><input id="cfgUrlVente"></div>
+    </details>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="cfgCancel">Annuler</button>
+      <button class="btn btn-primary" id="cfgSave">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   MON ÉCRAN — AEROGOMM
+   Lit les 4 CRM (même base Airtable) et affiche les tâches du jour.
+   ========================================================= */
+
+const DEFAULT_BASE = 'appeDIbbdUiiO529W';
+
+// Tables (par ID : ne casse pas si une table est renommée)
+const T = {
+  leads:     'tblfp281M08EHR8b7', // "Table 1"
+  chantiers: 'tbluIZhRtzzJQww2G', // "Chantiers"
+  tiers:     'tblOPU2ZGkaHyECaa', // "tiersExternes"
+  vente:     'tbl2L9MhGw0qp9NCh'  // "VenteMateriel"
+};
+
+const DEFAULT_URLS = {
+  leads:     'https://aerogomm.github.io/crmcommerciaux/leads_commerciaux.html',
+  chantiers: 'https://aerogomm.github.io/crmcommerciaux/gestion_chantiers.html',
+  tiers:     'https://aerogomm.github.io/crm-prospection/tiers_externes.html',
+  vente:     'https://aerogomm.github.io/vente-materiel/vente_materiel.html'
+};
+
+// Statuts considérés comme « fermés » (plus de tâche à faire)
+const CLOS = {
+  leads:     ['sans suite','chantier archivé','chantier terminé','commission payée','commission payé'],
+  chantiers: ['soldé'],
+  tiers:     ['terminé'],
+  vente:     ['sans suite','commission payée','commission payé']
+};
+
+const CRENEAUX = ['Tôt le matin','Début de matinée','Fin de matinée',"Début d'après-midi","Fin d'après-midi",'Début de soirée'];
+
+/* ---------- Configuration (localStorage) ---------- */
+const LS = k => 'monecran_' + k;
+function getCfg(){
+  return {
+    token: localStorage.getItem(LS('token')) || localStorage.getItem('treso_at_token') || '',
+    base:  localStorage.getItem(LS('base'))  || localStorage.getItem('treso_at_base')  || DEFAULT_BASE,
+    auto:  parseInt(localStorage.getItem(LS('auto')) ?? '5', 10),
+    urls: {
+      leads:     localStorage.getItem(LS('url_leads'))     || DEFAULT_URLS.leads,
+      chantiers: localStorage.getItem(LS('url_chantiers')) || DEFAULT_URLS.chantiers,
+      tiers:     localStorage.getItem(LS('url_tiers'))     || DEFAULT_URLS.tiers,
+      vente:     localStorage.getItem(LS('url_vente'))     || DEFAULT_URLS.vente
+    }
+  };
+}
+let cfg = getCfg();
+
+/* ---------- Dates ---------- */
+function ymd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function addDays(d,n){ const x=new Date(d); x.setDate(x.getDate()+n); return x; }
+let TODAY = ymd(new Date());
+let TOMORROW = ymd(addDays(new Date(),1));
+function dayOf(v){ // 'YYYY-MM-DD' ou ISO date-heure → date locale 'YYYY-MM-DD'
+  if(!v) return '';
+  if(/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+  const d = new Date(v); return isNaN(d) ? '' : ymd(d);
+}
+function daysLate(v){
+  const a = new Date(dayOf(v)+'T00:00:00'), b = new Date(TODAY+'T00:00:00');
+  return Math.round((b-a)/86400000);
+}
+function hhmm(v){ const d=new Date(v); return isNaN(d)?'':d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}); }
+function frDate(v){ const d=new Date(dayOf(v)+'T00:00:00'); return isNaN(d)?'':d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'}); }
+
+/* ---------- Petits utilitaires ---------- */
+function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function norm(s){ return String(s??'').trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,''); }
+function isClos(src, statut){ return CLOS[src].map(norm).includes(norm(statut)); }
+function euro(n){ return (Number(n)||0).toLocaleString('fr-FR',{maximumFractionDigits:0})+' €'; }
+function firstLine(s){ return String(s??'').split('\n')[0]; }
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),2500); }
+
+function commercialOK(rec, src){
+  const f = document.getElementById('selCommercial').value;
+  if(f==='Tous') return true;
+  let c = rec.fields.Commercial || '';
+  if(!c && src==='tiers') c = 'David';           // tiers sans commercial = David
+  return norm(c).includes(norm(f));
+}
+
+/* ---------- Airtable ---------- */
+async function atList(table, fields, formula){
+  let out = [], offset = '';
+  do{
+    const p = new URLSearchParams();
+    fields.forEach(f=>p.append('fields[]',f));
+    if(formula) p.append('filterByFormula',formula);
+    p.append('pageSize','100');
+    if(offset) p.append('offset',offset);
+    const r = await fetch(`https://api.airtable.com/v0/${cfg.base}/${table}?${p}`,{headers:{Authorization:'Bearer '+cfg.token}});
+    if(!r.ok){ const t = await r.text(); throw new Error('Airtable '+r.status+' — '+t.slice(0,160)); }
+    const j = await r.json();
+    out = out.concat(j.records||[]);
+    offset = j.offset || '';
+  } while(offset);
+  return out;
+}
+async function atPatch(table, id, fields){
+  const r = await fetch(`https://api.airtable.com/v0/${cfg.base}/${table}/${id}`,{
+    method:'PATCH',
+    headers:{Authorization:'Bearer '+cfg.token,'Content-Type':'application/json'},
+    body: JSON.stringify({fields, typecast:true})
+  });
+  if(!r.ok){ const t=await r.text(); throw new Error('Airtable '+r.status+' — '+t.slice(0,160)); }
+  return r.json();
+}
+
+/* ---------- Chargement des 4 sources ---------- */
+const DATA = { leads:[], chantiers:[], tiers:[], vente:[] };
+const ERR  = { leads:'', chantiers:'', tiers:'', vente:'' };
+
+const SOURCES = {
+  leads: {
+    fields:['Entreprise','Interlocuteur','Telephone','Commercial','Statut','ProchaineRelance','CreneauRelance','HeureRelance','ProchaineAction','SaisiParLucas','RdvTechProgramme','DateHeureRdvTech','Valorisation','Region'],
+    formula:"OR({ProchaineRelance}!='',{SaisiParLucas},{DateHeureRdvTech}!='')"
+  },
+  chantiers: {
+    fields:['Entreprise','Objet','Telephone','Commercial','StatutChantier','ProchaineRelance','CreneauRelance','ProchaineAction','DateDebutIntervention','DateFinIntervention','EquipeAffectee','Valorisation','DateChantierPrevue','Region'],
+    formula:"{StatutChantier}!='Soldé'"
+  },
+  tiers: {
+    fields:['Entreprise','Categorie','Objet','Interlocuteur','Telephone','Statut','ProchaineRelance','CreneauRelance','ProchaineAction','Commercial','DateCloture'],
+    formula:"{ProchaineRelance}!=''"
+  },
+  vente: {
+    fields:['Entreprise','Interlocuteur','Telephone','Commercial','Statut','MaterielConcerne','ProchaineRelance','CreneauRelance','ProchaineAction','DateDemo','Valorisation'],
+    formula:"OR({ProchaineRelance}!='',{DateDemo}!='')"
+  }
+};
+
+async function loadAll(){
+  TODAY = ymd(new Date()); TOMORROW = ymd(addDays(new Date(),1));
+  if(!cfg.token){ renderAll(); openCfg(); return; }
+  document.querySelector('.grid').classList.add('loading');
+  await Promise.all(Object.keys(SOURCES).map(async src=>{
+    try{
+      DATA[src] = await atList(T[src], SOURCES[src].fields, SOURCES[src].formula);
+      ERR[src] = '';
+    }catch(e){ ERR[src] = e.message; DATA[src] = []; }
+  }));
+  document.querySelector('.grid').classList.remove('loading');
+  renderAll();
+}
+
+/* ---------- Tri : retard d'abord, puis créneau ---------- */
+function crenIdx(c){ const i=CRENEAUX.indexOf(c); return i<0?99:i; }
+function sortRelances(a,b){
+  const da=dayOf(a.fields.ProchaineRelance), db=dayOf(b.fields.ProchaineRelance);
+  if(da!==db) return da<db?-1:1;
+  const ca=crenIdx(a.fields.CreneauRelance), cb=crenIdx(b.fields.CreneauRelance);
+  if(ca!==cb) return ca-cb;
+  return String(a.fields.HeureRelance||'').localeCompare(String(b.fields.HeureRelance||''));
+}
+function relancesDues(src, list){
+  return list.filter(r=>{
+    const d = dayOf(r.fields.ProchaineRelance);
+    if(!d || d>TODAY) return false;
+    if(src==='tiers' && r.fields.DateCloture) return false;
+    return !isClos(src, src==='chantiers'?r.fields.StatutChantier:r.fields.Statut);
+  }).sort(sortRelances);
+}
+function relancesDemain(src, list){
+  return list.filter(r=>dayOf(r.fields.ProchaineRelance)===TOMORROW && !isClos(src, src==='chantiers'?r.fields.StatutChantier:r.fields.Statut)).length;
+}
+
+/* ---------- Rendu d'une ligne ---------- */
+function itemHTML(src, r, opts={}){
+  const f = r.fields;
+  const late = f.ProchaineRelance ? daysLate(f.ProchaineRelance) : 0;
+  const tags = [];
+  if(opts.time) tags.push(`<span class="tag cren">🕒 ${esc(opts.time)}</span>`);
+  if(!opts.noRelance && f.ProchaineRelance){
+    if(late>0) tags.push(`<span class="tag late">En retard ${late} j</span>`);
+    if(f.CreneauRelance) tags.push(`<span class="tag cren">${esc(f.CreneauRelance)}${f.HeureRelance?' · '+esc(f.HeureRelance):''}</span>`);
+  }
+  const statut = src==='chantiers'?f.StatutChantier:f.Statut;
+  if(statut && !opts.hideStatut) tags.push(`<span class="tag">${esc(String(statut).trim())}</span>`);
+  if(opts.extraTags) tags.push(...opts.extraTags);
+  const who = f.Commercial || (src==='tiers'?'David':'');
+  if(who && document.getElementById('selCommercial').value==='Tous') tags.push(`<span class="tag who">👤 ${esc(who)}</span>`);
+
+  const sub = opts.sub ?? (f.ProchaineAction || f.Objet || firstLine(f.Interlocuteur) || '');
+  const tel = (f.Telephone||'').replace(/[^\d+]/g,'');
+  const actions = [];
+  if(tel) actions.push(`<a class="mini" href="tel:${esc(tel)}" title="Appeler ${esc(f.Telephone)}">📞</a>`);
+  if(!opts.noRelance && f.ProchaineRelance) actions.push(`<button class="mini" data-act="demain" data-src="${src}" data-id="${r.id}" title="Reporter la relance à demain">→ Demain</button>`);
+  if(src==='tiers' && !opts.noRelance) actions.push(`<button class="mini done" data-act="termine" data-src="${src}" data-id="${r.id}" title="Marquer ce dossier Terminé">✓</button>`);
+
+  return `<div class="item ${late>0&&!opts.noRelance?'is-late':''}">
+    <div class="item-main">
+      <div class="item-name">${esc(f.Entreprise || '(sans nom)')}</div>
+      ${sub?`<div class="item-sub">${esc(sub)}</div>`:''}
+      ${tags.length?`<div class="tags">${tags.join('')}</div>`:''}
+    </div>
+    <div class="item-actions">${actions.join('')}</div>
+  </div>`;
+}
+function section(title, items, html){
+  if(!items.length) return '';
+  return `<div class="sec">${title} <span class="n">${items.length}</span></div>${html}`;
+}
+function emptyHTML(msg){ return `<div class="empty"><span class="big">✅</span>${msg}</div>`; }
+
+/* ---------- Construction de chaque mini-écran ---------- */
+const STATS = {};
+
+function buildLeads(){
+  const L = DATA.leads.filter(r=>commercialOK(r,'leads'));
+  const rel = relancesDues('leads', L);
+  const rdv = L.filter(r=>dayOf(r.fields.DateHeureRdvTech)===TODAY)
+               .sort((a,b)=>String(a.fields.DateHeureRdvTech).localeCompare(String(b.fields.DateHeureRdvTech)));
+  const nouveaux = L.filter(r=>r.fields.SaisiParLucas && !isClos('leads',r.fields.Statut));
+  let body = '';
+  body += section('🔧 RDV techniques aujourd\'hui', rdv, rdv.map(r=>itemHTML('leads',r,{time:hhmm(r.fields.DateHeureRdvTech),noRelance:true, sub:firstLine(r.fields.Interlocuteur)||r.fields.Region||''})).join(''));
+  body += section('🆕 Nouveaux contacts saisis par Lucas', nouveaux, nouveaux.map(r=>itemHTML('leads',r,{noRelance:true})).join(''));
+  body += section('📞 Relances', rel, rel.map(r=>itemHTML('leads',r)).join(''));
+  STATS.leads = { rel, agenda:rdv.length, late:rel.filter(r=>daysLate(r.fields.ProchaineRelance)>0).length, demain:relancesDemain('leads',L),
+    total: rel.length + rdv.length + nouveaux.length };
+  return { body: body || emptyHTML('Aucune tâche commerciale aujourd\'hui'),
+    foot: `<span>${nouveaux.length} nouveau(x) contact(s)</span><span>Demain : ${STATS.leads.demain} relance(s)</span>` };
+}
+
+function buildChantiers(){
+  const C = DATA.chantiers.filter(r=>commercialOK(r,'chantiers'));
+  const rel = relancesDues('chantiers', C);
+  const surSite = C.filter(r=>{
+    const d=dayOf(r.fields.DateDebutIntervention), e=dayOf(r.fields.DateFinIntervention)||d;
+    return d && d<=TODAY && e>=TODAY;
+  });
+  const aFacturer = C.filter(r=>['termine / a facturer','termine'].includes(norm(r.fields.StatutChantier)));
+  const acompte = C.filter(r=>norm(r.fields.StatutChantier)==='acompte a demander');
+  let body='';
+  body += section('🏗️ Équipes sur chantier aujourd\'hui', surSite, surSite.map(r=>{
+    const f=r.fields, d=dayOf(f.DateDebutIntervention), e=dayOf(f.DateFinIntervention);
+    const lbl = d===TODAY?'Démarrage':(e===TODAY?'Dernier jour':'En cours');
+    return itemHTML('chantiers',r,{noRelance:true,hideStatut:true,
+      sub:(f.EquipeAffectee?'👷 '+f.EquipeAffectee:'Équipe non renseignée')+(f.Objet?' · '+f.Objet:''),
+      extraTags:[`<span class="tag cren">${lbl}</span>`, e?`<span class="tag">→ ${frDate(e)}</span>`:'']});
+  }).join(''));
+  body += section('🧾 Terminés — à facturer', aFacturer, aFacturer.map(r=>itemHTML('chantiers',r,{noRelance:true,hideStatut:true,
+      sub:r.fields.Objet||'', extraTags:[r.fields.Valorisation?`<span class="tag money">${euro(r.fields.Valorisation)} HT</span>`:'',
+      r.fields.DateFinIntervention?`<span class="tag">Fin ${frDate(r.fields.DateFinIntervention)}</span>`:'']})).join(''));
+  body += section('📞 Relances', rel, rel.map(r=>itemHTML('chantiers',r)).join(''));
+  STATS.chantiers = { rel, agenda:surSite.length, late:rel.filter(r=>daysLate(r.fields.ProchaineRelance)>0).length, demain:relancesDemain('chantiers',C),
+    total: rel.length + surSite.length + aFacturer.length };
+  return { body: body || emptyHTML('Rien à traiter sur les chantiers aujourd\'hui'),
+    foot: `<span>${acompte.length} acompte(s) à demander</span><span>Demain : ${STATS.chantiers.demain} relance(s)</span>` };
+}
+
+function buildTiers(){
+  const X = DATA.tiers.filter(r=>commercialOK(r,'tiers'));
+  const rel = relancesDues('tiers', X);
+  const body = section('📞 Relances', rel, rel.map(r=>itemHTML('tiers',r,{
+      sub:[r.fields.Categorie, r.fields.ProchaineAction||r.fields.Objet].filter(Boolean).join(' · ')})).join(''));
+  STATS.tiers = { rel, agenda:0, late:rel.filter(r=>daysLate(r.fields.ProchaineRelance)>0).length, demain:relancesDemain('tiers',X), total:rel.length };
+  const actifs = X.filter(r=>!r.fields.DateCloture && !isClos('tiers',r.fields.Statut)).length;
+  return { body: body || emptyHTML('Aucune relance tiers aujourd\'hui'),
+    foot: `<span>${actifs} dossier(s) suivi(s) avec relance</span><span>Demain : ${STATS.tiers.demain} relance(s)</span>` };
+}
+
+function buildVente(){
+  const V = DATA.vente.filter(r=>commercialOK(r,'vente'));
+  const rel = relancesDues('vente', V);
+  const demos = V.filter(r=>dayOf(r.fields.DateDemo)===TODAY && !isClos('vente',r.fields.Statut));
+  let body='';
+  body += section('🎯 Démos aujourd\'hui', demos, demos.map(r=>itemHTML('vente',r,{noRelance:true,sub:r.fields.MaterielConcerne||firstLine(r.fields.Interlocuteur)})).join(''));
+  body += section('📞 Relances', rel, rel.map(r=>itemHTML('vente',r,{
+      sub:r.fields.ProchaineAction||r.fields.MaterielConcerne||'',
+      extraTags:[r.fields.Valorisation?`<span class="tag money">${euro(r.fields.Valorisation)}</span>`:'']})).join(''));
+  STATS.vente = { rel, agenda:demos.length, late:rel.filter(r=>daysLate(r.fields.ProchaineRelance)>0).length, demain:relancesDemain('vente',V),
+    total: rel.length + demos.length };
+  const pipe = V.filter(r=>!isClos('vente',r.fields.Statut) && norm(r.fields.Statut)!=='materiel vendu').reduce((s,r)=>s+(Number(r.fields.Valorisation)||0),0);
+  return { body: body || emptyHTML('Aucune tâche vente matériel aujourd\'hui'),
+    foot: `<span>Pipeline en cours (avec relance) : ${euro(pipe)}</span><span>Demain : ${STATS.vente.demain} relance(s)</span>` };
+}
+
+const PANELS = {
+  leads:     { el:'p-leads',     ico:'💼', title:'Leads commerciaux', build:buildLeads },
+  chantiers: { el:'p-chantiers', ico:'🏗️', title:'Chantiers',         build:buildChantiers },
+  tiers:     { el:'p-tiers',     ico:'🏛️', title:'Tiers externes',    build:buildTiers },
+  vente:     { el:'p-vente',     ico:'🛠️', title:'Vente matériel',    build:buildVente }
+};
+
+function renderAll(){
+  let today=0, late=0, agenda=0, demain=0;
+  for(const src of Object.keys(PANELS)){
+    const P = PANELS[src];
+    const { body, foot } = P.build();
+    const s = STATS[src];
+    today += s.rel.length - s.late; late += s.late; agenda += s.agenda; demain += s.demain;
+    document.getElementById(P.el).innerHTML = `
+      <div class="panel-head">
+        <div class="panel-title"><span class="ico">${P.ico}</span><h3>${P.title}</h3>
+          <span class="count ${s.total?'':'zero'}">${s.total}</span>
+          ${s.late?`<span class="count-late" title="Relances en retard">${s.late} en retard</span>`:''}
+        </div>
+        <a class="open-link" href="${esc(cfg.urls[src])}" target="_blank" rel="noopener">Ouvrir ↗</a>
+      </div>
+      ${ERR[src]?`<div class="err">⚠ ${esc(ERR[src])}</div>`:''}
+      <div class="panel-body">${cfg.token?body:emptyHTML('Configure ton jeton Airtable (⚙) pour afficher tes tâches')}</div>
+      <div class="panel-foot">${foot}</div>`;
+  }
+  document.getElementById('kToday').textContent = today;
+  document.getElementById('kLate').textContent = late;
+  document.getElementById('kAgenda').textContent = agenda;
+  document.getElementById('kTomorrow').textContent = demain;
+}
+
+/* ---------- Actions rapides ---------- */
+document.querySelector('.grid').addEventListener('click', async e=>{
+  const b = e.target.closest('button[data-act]'); if(!b) return;
+  const { act, src, id } = b.dataset;
+  const rec = DATA[src].find(r=>r.id===id); if(!rec) return;
+  b.disabled = true; b.textContent = '⏳';
+  try{
+    if(act==='demain'){
+      await atPatch(T[src], id, { ProchaineRelance: TOMORROW });
+      rec.fields.ProchaineRelance = TOMORROW;
+      toast(`« ${rec.fields.Entreprise||''} » reporté à demain`);
+    }else if(act==='termine'){
+      if(!confirm(`Marquer « ${rec.fields.Entreprise||''} » comme Terminé ?`)){ renderAll(); return; }
+      await atPatch(T[src], id, { Statut:'Terminé', DateCloture: TODAY });
+      rec.fields.Statut='Terminé'; rec.fields.DateCloture=TODAY;
+      toast(`« ${rec.fields.Entreprise||''} » marqué Terminé`);
+    }
+  }catch(err){ toast('Erreur : '+err.message); }
+  renderAll();
+});
+
+/* ---------- Configuration : fenêtre ---------- */
+function openCfg(){
+  document.getElementById('cfgToken').value = cfg.token;
+  document.getElementById('cfgBase').value  = cfg.base;
+  document.getElementById('cfgAuto').value  = cfg.auto;
+  document.getElementById('cfgUrlLeads').value     = cfg.urls.leads;
+  document.getElementById('cfgUrlChantiers').value = cfg.urls.chantiers;
+  document.getElementById('cfgUrlTiers').value     = cfg.urls.tiers;
+  document.getElementById('cfgUrlVente').value     = cfg.urls.vente;
+  document.getElementById('modalCfg').classList.add('show');
+}
+function closeCfg(){ document.getElementById('modalCfg').classList.remove('show'); }
+document.getElementById('btnConfig').onclick = openCfg;
+document.getElementById('cfgCancel').onclick = closeCfg;
+document.getElementById('cfgSave').onclick = ()=>{
+  localStorage.setItem(LS('token'), document.getElementById('cfgToken').value.trim());
+  localStorage.setItem(LS('base'),  document.getElementById('cfgBase').value.trim() || DEFAULT_BASE);
+  localStorage.setItem(LS('auto'),  String(Math.max(0, parseInt(document.getElementById('cfgAuto').value||'0',10))));
+  localStorage.setItem(LS('url_leads'),     document.getElementById('cfgUrlLeads').value.trim());
+  localStorage.setItem(LS('url_chantiers'), document.getElementById('cfgUrlChantiers').value.trim());
+  localStorage.setItem(LS('url_tiers'),     document.getElementById('cfgUrlTiers').value.trim());
+  localStorage.setItem(LS('url_vente'),     document.getElementById('cfgUrlVente').value.trim());
+  cfg = getCfg(); closeCfg(); startAuto(); loadAll();
+};
+
+/* ---------- Filtre commercial ---------- */
+const sel = document.getElementById('selCommercial');
+sel.value = localStorage.getItem(LS('commercial')) || 'David';
+sel.onchange = ()=>{ localStorage.setItem(LS('commercial'), sel.value); updateGreet(); renderAll(); };
+
+/* ---------- En-tête : date, heure, salutation ---------- */
+function updateGreet(){
+  const h = new Date().getHours();
+  const who = sel.value==='Tous' ? 'David' : sel.value;
+  document.getElementById('greetTxt').textContent = (h<18?'Bonjour ':'Bonsoir ') + who + (sel.value==='Tous'?' — vue équipe':'');
+  document.getElementById('dateTxt').textContent = new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+}
+function tick(){
+  document.getElementById('clock').textContent = new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  if(ymd(new Date())!==TODAY){ updateGreet(); loadAll(); } // passage à minuit
+}
+
+/* ---------- Actualisation ---------- */
+let autoTimer = null;
+function startAuto(){
+  clearInterval(autoTimer);
+  if(cfg.auto>0) autoTimer = setInterval(loadAll, cfg.auto*60000);
+}
+document.getElementById('btnRefresh').onclick = ()=>{ loadAll().then(()=>toast('Données à jour')); };
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && cfg.token) loadAll(); });
+
+updateGreet(); tick(); setInterval(tick, 30000);
+startAuto();
+loadAll();
+</script>
+</body>
+</html>
