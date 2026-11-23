@@ -1195,7 +1195,7 @@ const STATUTS_VENDUS_OUVERTS = ['materiel vendu','installation a faire','commiss
 async function loadVenteJauge(){
   try{
     // ventes conclues (jauge CA) + toutes les fiches avec une commission (pavé Trésorerie, comme « Commandes analysées »)
-    VENTE_RECS = await atList(T.vente, ['Statut','MontantCommission','Valorisation','DateCommande','DateMiseEnRoute'],
+    VENTE_RECS = await atList(T.vente, ['Statut','MontantCommission','Valorisation','DateCommande','DateMiseEnRoute','DateCommission','CommissionPayee'],
       "OR(FIND('vendu',LOWER({Statut})),FIND('installation',LOWER({Statut})),FIND('commission',LOWER({Statut})),{MontantCommission}>0)");
     ERR_VENTE = '';
   }catch(e){ ERR_VENTE = e.message; }
@@ -1368,7 +1368,8 @@ function renderJaugeCA(){
    • Réseau : abonnements des applicateurs de leads aerogommage (mêmes abonnés que la jauge CA), TVA 20 % ;
        encaissé = règlement du mois validé dans leads aerogommage ; mois suivants = prévision (voir calcReseauTreso).
    • Vente matériel : ligne « Cumul mensuel TTC » de la page « Commandes analysées » :
-       commissions des fiches avec « MontantCommission », rangées au mois de la date de mise en route,
+       commissions des fiches avec « MontantCommission », rangées au mois de la date de paiement
+       commission prévisionnelle (« DateCommission ») ; à défaut, au mois de la date de mise en route,
        + consommables du mois (table « Consommables » ; 800 € HT par défaut si rien n'est saisi), TVA 20 %.
    • Dossiers de Carole (L'Atelier) mis à part, comme la jauge CA ; vue Atelier = chantiers seulement.
    ========================================================= */
@@ -1386,6 +1387,8 @@ async function loadConso(){
   consoCharge = true;
   renderTreso();
 }
+/* Date d'encaissement d'une commission vente matériel : date de paiement commission prévue, sinon mise en route */
+function dateEncVente(r){ return String(r.fields.DateCommission || r.fields.DateMiseEnRoute || ''); }
 function moisPlus(n){                                  // "AAAA-MM" du mois en cours décalé de n mois
   const d = new Date(TODAY+'T00:00:00'); d.setDate(1); d.setMonth(d.getMonth()+n);
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
@@ -1426,14 +1429,15 @@ function renderTreso(){
   const venteOK = !modeAtelier && venteChargee && !ERR_VENTE;
   const analysees = venteOK ? VENTE_RECS.filter(r=>Number(r.fields.MontantCommission)>0) : [];
   const VE = MOIS.map(m=>{
-    const commHT = analysees.filter(r=>String(r.fields.DateMiseEnRoute||'').slice(0,7)===m)
+    const commHT = analysees.filter(r=>dateEncVente(r).slice(0,7)===m)
       .reduce((s,r)=>s+Number(r.fields.MontantCommission),0);
     const saisi = Object.prototype.hasOwnProperty.call(CONSO, m);
     const consoHT = saisi ? CONSO[m] : CONSO_DEFAUT_HT;
     return { commHT, consoHT, saisi, comm:commHT*TVA_VENTE, conso:consoHT*TVA_VENTE, tot:(commHT+consoHT)*TVA_VENTE };
   });
-  const sansMiseEnRoute = analysees.filter(r=>!r.fields.DateMiseEnRoute &&
-    !['commission payee','commission paye','sans suite'].includes(norm(r.fields.Statut))).length;
+  const ouvertes = analysees.filter(r=>!['commission payee','commission paye','sans suite'].includes(norm(r.fields.Statut)));
+  const sansMiseEnRoute = ouvertes.filter(r=>!dateEncVente(r)).length;                       // aucune date : non comptée
+  const sansDatePaiement = ouvertes.filter(r=>!r.fields.DateCommission && r.fields.DateMiseEnRoute).length; // comptée à la mise en route
 
   // ---- Réseau : abonnements des applicateurs (pas dans la vue Atelier)
   const reseauOK = !modeAtelier && RESEAU.charge && !RESEAU.err;
@@ -1461,7 +1465,7 @@ function renderTreso(){
     + entete('ch', 'Chantiers', "Trésorerie chantiers : acomptes et soldes, à leur date d'encaissement prévue", cfg.urls.chantiers, 'Ouvrir Gestion chantiers (vue 💰 Trésorerie Chantiers)');
   if(!modeAtelier){
     html += entete('re', 'Réseau', "Abonnements des applicateurs du réseau (leads aerogommage), au mois de l'abonnement", urlLeadsAero, 'Ouvrir leads aerogommage')
-      + entete('ve', 'Vente matériel', 'Cumul mensuel de « Commandes analysées » : commissions (au mois de mise en route) + consommables', urlCommandes, 'Ouvrir Commandes analysées')
+      + entete('ve', 'Vente matériel', 'Commissions au mois de paiement prévu (date de paiement commission, à défaut mise en route) + consommables du mois', urlCommandes, 'Ouvrir Commandes analysées')
       + `<div class="t-th tot"><span class="t-col-titre tot" title="Chantiers + réseau + vente matériel">Total</span></div>`;
   }
 
@@ -1522,7 +1526,8 @@ function renderTreso(){
   const alertes = [];
   if(retard.length) alertes.push(`⚠ ${retard.length} encaissement${pl(retard.length)} chantier en retard (prévu${pl(retard.length)} avant ${NOMS[0]}, non reçu${pl(retard.length)}) : ${euro(total(retard))}`);
   if(sansDate.length) alertes.push(`⚠ ${sansDate.length} encaissement${pl(sansDate.length)} chantier sans date (non compté${pl(sansDate.length)})`);
-  if(!modeAtelier && sansMiseEnRoute) alertes.push(`⚠ ${sansMiseEnRoute} vente${pl(sansMiseEnRoute)} avec commission sans date de mise en route (non comptée${pl(sansMiseEnRoute)})`);
+  if(!modeAtelier && sansMiseEnRoute) alertes.push(`⚠ ${sansMiseEnRoute} vente${pl(sansMiseEnRoute)} avec commission sans date de paiement ni de mise en route (non comptée${pl(sansMiseEnRoute)})`);
+  if(!modeAtelier && sansDatePaiement) alertes.push(`⚠ ${sansDatePaiement} vente${pl(sansDatePaiement)} sans date de paiement commission (comptée${pl(sansDatePaiement)} au mois de mise en route)`);
   if(!modeAtelier && RESEAU.err) alertes.push(`⚠ Réseau : ${RESEAU.err}`);
   if(!modeAtelier && ERR_VENTE) alertes.push(`⚠ Vente matériel : ${ERR_VENTE}`);
   if(!modeAtelier && ERR_CONSO) alertes.push(`⚠ Consommables : ${ERR_CONSO}`);
