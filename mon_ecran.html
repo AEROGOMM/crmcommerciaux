@@ -39,6 +39,13 @@
   .brand h1{font-size:17px;font-weight:800;letter-spacing:.3px;white-space:nowrap;}
   .brand .sub{font-size:11px;color:var(--muted);white-space:nowrap;}
   .header-actions{display:flex;gap:8px;align-items:center;}
+  /* ---------- Bandeau défilant de messages positifs (à côté du logo) ----------
+     Défile de droite à gauche ; à gauche, le bord coupe net : les lettres disparaissent une à une. */
+  .app-header > .brand{flex-shrink:0;}
+  .ticker{flex:1 1 0;min-width:0;overflow:hidden;align-self:stretch;display:flex;align-items:center;margin:0 18px;}
+  .ticker-track{display:flex;white-space:pre;will-change:transform;animation:defile linear infinite;}
+  .ticker-track span{font-family:'Syne',sans-serif;font-size:19px;font-weight:800;color:var(--accent);}
+  @keyframes defile{from{transform:translateX(0);}to{transform:translateX(-50%);}}
   .clock{font-family:'DM Mono',monospace;font-size:13px;color:var(--muted);margin-right:6px;}
   select,input{background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;
     padding:7px 10px;font-family:'Syne',sans-serif;font-size:13px;}
@@ -391,7 +398,7 @@
   /* ---------- Téléphone ---------- */
   @media (max-width:700px){
     .app-header{padding:0 12px;}
-    .brand .sub,.clock{display:none;}
+    .brand .sub,.clock,.ticker{display:none;}
     #btnRefresh .txt{display:none;}
     .wrap{padding:10px 10px 12px;}
     .greet{margin-bottom:8px;}
@@ -465,6 +472,8 @@
       <div class="sub">Tâches du jour — tous les CRM</div>
     </div>
   </div>
+  <!-- Messages positifs qui défilent (liste modifiable dans MESSAGES_POSITIFS, en haut du script) -->
+  <div class="ticker" aria-hidden="true"><div class="ticker-track" id="tickerTrack"></div></div>
   <div class="header-actions">
     <span class="clock" id="clock">--:--</span>
     <select id="selCommercial" title="Filtrer par commercial">
@@ -2045,6 +2054,36 @@ function startAuto(){
 }
 document.getElementById('btnRefresh').onclick = ()=>{ loadAll().then(()=>{ if(cfg.token) toast('Données à jour'); }); };
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && cfg.token) loadAll(); });
+
+/* ---------- Bandeau défilant : messages positifs ----------
+   Pour modifier les phrases : changer la liste ci-dessous (une phrase par ligne, entre apostrophes droites ou guillemets). */
+const MESSAGES_POSITIFS = [
+  "Il faut prendre conscience de son état d'entrepreneur",
+  "Il faut apprendre à apprendre",
+  "Les amateurs s'entraînent quand ils en ont envie, un pro tous les jours",
+  "1 heure d'audio par jour",
+  "10 pages de lecture par jour",
+  "1 nouvelle compétence métier par mois",
+  "1 conférence par trimestre",
+  "De l'I.A. tous les jours",
+  "Il faut être contradictoire",
+  "Ne pas rester seul"
+];
+const TICKER_SEP = '  –  ';          // deux espaces, un tiret, deux espaces
+const TICKER_VITESSE = 60;           // vitesse en pixels par seconde
+function lancerTicker(){
+  const track = document.getElementById('tickerTrack');
+  if(!track) return;
+  const texte = MESSAGES_POSITIFS.join(TICKER_SEP) + TICKER_SEP;
+  track.innerHTML = '';
+  for(let i=0;i<2;i++){ const sp = document.createElement('span'); sp.textContent = texte; track.appendChild(sp); }  // 2 copies = boucle sans trou
+  const sp = track.firstChild;
+  const dist = sp.getBoundingClientRect().width;      // distance parcourue pour un tour complet
+  track.style.animationDuration = Math.max(10, dist / TICKER_VITESSE) + 's';
+}
+lancerTicker();
+if(document.fonts && document.fonts.ready) document.fonts.ready.then(lancerTicker);
+let tickerResize; window.addEventListener('resize', ()=>{ clearTimeout(tickerResize); tickerResize = setTimeout(lancerTicker, 300); });
 
 updateGreet(); tick(); setInterval(tick, 30000);
 startAuto();
