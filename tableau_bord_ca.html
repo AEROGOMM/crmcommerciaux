@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tableau de bord CA et Trésorerie — AEROGOMM</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='1' y='1' width='62' height='62' rx='14' fill='%230D1117' stroke='%2330363D' stroke-width='2'/%3E%3Crect x='10' y='10' width='20' height='20' rx='5' fill='%2358A6FF'/%3E%3Crect x='34' y='10' width='20' height='20' rx='5' fill='%23E07B39'/%3E%3Crect x='10' y='34' width='20' height='20' rx='5' fill='%23A87DC4'/%3E%3Crect x='34' y='34' width='20' height='20' rx='5' fill='%232EC4B6'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#161B22">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0D1117;--surface:#161B22;--surface2:#1C2128;--surface3:#21262D;
+    --border:#30363D;--border2:#484F58;--text:#E6EDF3;--muted:#8B949E;--accent:#58A6FF;
+    --leads:#58A6FF;--leads-bg:#0D2240;
+    --chant:#E07B39;--chant-bg:#2D1800;
+    --tiers:#A87DC4;--tiers-bg:#241535;
+    --vente:#2EC4B6;--vente-bg:#0D2A28;
+    --idee:#F5C542;--idee-bg:#2A2208;
+    --projet:#7DD87A;--projet-bg:#10260F;
+    --reseau:#E86FA5;
+    --ok:#3FB27F;--late:#E05252;--late-bg:#2D0C0C;--warn:#D4A017;
+    --radius:8px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;
+    min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;}
+
+  /* ---------- En-tête ---------- */
+  .app-header{position:sticky;top:0;z-index:20;height:60px;flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);
+    display:flex;align-items:center;justify-content:space-between;padding:0 20px;gap:12px;}
+  .brand{display:flex;align-items:center;gap:10px;min-width:0;}
+  .brand-logo{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--vente));
+    display:flex;align-items:center;justify-content:center;font-weight:800;color:#000;font-size:15px;flex-shrink:0;}
+  .brand h1{font-size:17px;font-weight:800;letter-spacing:.3px;white-space:nowrap;}
+  .brand .sub{font-size:11px;color:var(--muted);white-space:nowrap;}
+  .header-actions{display:flex;gap:8px;align-items:center;}
+  .clock{font-family:'DM Mono',monospace;font-size:13px;color:var(--muted);margin-right:6px;}
+  select,input{background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;
+    padding:7px 10px;font-family:'Syne',sans-serif;font-size:13px;}
+  .btn{border:none;border-radius:6px;padding:8px 12px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;
+    display:inline-flex;align-items:center;gap:6px;transition:opacity .15s,transform .1s;}
+  .btn:active{transform:scale(.97);}
+  .btn-primary{background:var(--accent);color:#000;}
+  .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted);}
+  .btn-ghost:hover{color:var(--text);border-color:var(--border2);}
+
+  .wrap{flex:1 1 auto;display:flex;flex-direction:column;width:100%;max-width:1600px;margin:0 auto;padding:14px 20px 18px;}
+
+  /* ---------- Salutation + chiffres clés ---------- */
+  .greet{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+  .greet h2{font-size:20px;font-weight:800;}
+  .greet .date{color:var(--muted);font-size:13px;text-transform:capitalize;}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px;}
+  .kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;}
+  .kpi .lbl{font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;white-space:nowrap;}
+  .kpi .lbl .short{display:none;}
+  .kpi .val{font-family:'DM Mono',monospace;font-size:24px;font-weight:500;margin-top:2px;line-height:1.25;}
+  .kpi .hint{font-size:11px;color:var(--muted);}
+  .kpi.late .val{color:var(--late);}
+  .kpi.today .val{color:var(--accent);}
+  .kpi.agenda .val{color:var(--warn);}
+  .kpi.tomorrow .val{color:var(--muted);}
+
+  /* ---------- Zone principale : grille 2 × 2 ----------
+     En haut : les 4 mini-écrans CRM (bloc 2×2)  |  IDÉES + PROJETS EN COURS (même hauteur)
+     En bas  : la jauge CA du mois               |  le pavé TRÉSORERIE DU MOIS (même hauteur) */
+  .main{flex:1 1 0;min-height:600px;max-height:780px;display:grid;grid-template-columns:1fr 1fr;
+    grid-template-rows:minmax(0,1fr) auto;grid-template-areas:"tiles side" "jauge treso";column-gap:16px;row-gap:10px;}
+  .main > .tiles{grid-area:tiles;}
+  .main > #p-jauge{grid-area:jauge;}
+  .main > .side{grid-area:side;}
+  .main > #p-treso{grid-area:treso;}
+  .tiles{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:10px;min-height:0;min-width:0;}
+  .side{display:grid;grid-template-rows:1fr 1fr;gap:10px;min-height:0;min-width:0;}
+
+  /* ---------- Jauge : CA du mois (sous Tiers externes et Vente matériel) ---------- */
+  .jauge{position:relative;flex-shrink:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;padding-top:3px;}
+  .jauge::before{content:'';position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,var(--chant),var(--ok));}
+  .jauge-head{display:flex;align-items:center;gap:10px;padding:7px 8px 5px 12px;min-height:40px;}
+  .jauge-titre{font-size:13.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+  .jauge-titre .mois{color:var(--muted);font-weight:700;}
+  .jauge-info{margin-left:auto;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+  .jauge-body{padding:0 12px 8px;display:grid;grid-template-columns:86px 1fr auto;column-gap:12px;row-gap:6px;align-items:center;}
+  .j-row{display:contents;}   /* chaque ligne se range dans la grille commune de la jauge */
+  .j-lbl{font-size:10px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted);line-height:1.25;}
+  .j-track{position:relative;height:12px;background:var(--surface3);border-radius:6px;}
+  .j-track.global{height:18px;border-radius:9px;}
+  .j-track.j-off{background:repeating-linear-gradient(45deg,var(--surface3),var(--surface3) 6px,var(--surface2) 6px,var(--surface2) 12px);}
+  .j-fill{position:absolute;left:0;top:0;bottom:0;border-radius:inherit;transition:width .7s ease;}
+  .j-fill.acc{background:linear-gradient(90deg,#B85A24,var(--chant));}
+  .j-fill.rea{background:linear-gradient(90deg,#2B8A5E,var(--ok));}
+  .j-fill.res{background:linear-gradient(90deg,#B4457E,var(--reseau));}
+  .j-fill.ven{background:linear-gradient(90deg,#1B8A80,var(--vente));}
+  .j-stack{position:absolute;inset:0;display:flex;border-radius:inherit;overflow:hidden;}
+  .j-seg{height:100%;flex:none;transition:width .7s ease;}
+  .j-seg.acc{background:linear-gradient(90deg,#B85A24,var(--chant));}
+  .j-seg.res{background:linear-gradient(90deg,#B4457E,var(--reseau));}
+  .j-seg.ven{background:linear-gradient(90deg,#1B8A80,var(--vente));}
+  .j-seg.imm{background:linear-gradient(90deg,#D99466,#E8B48E);}      /* leads « Imminent » : même orange, en pastel */
+  .j-obj{position:absolute;top:-4px;bottom:-4px;width:0;border-left:2px dashed var(--warn);}
+  .j-obj.fort{border-left:3px solid var(--warn);top:-5px;bottom:-5px;}
+  .j-obj.leger,.j-fin.leger{opacity:.4;}
+  .j-fin{position:absolute;right:-1px;top:-4px;bottom:-4px;width:0;border-right:3px solid var(--ok);}
+  .j-axe-track{position:relative;height:13px;margin-bottom:-3px;font-family:'DM Mono',monospace;font-size:9.5px;color:var(--muted);}
+  .j-axe-track span{position:absolute;top:0;white-space:nowrap;}
+  .j-axe-track .ax-mini{transform:translateX(-50%);color:var(--warn);}
+  .j-axe-track .ax-fin{right:0;color:var(--ok);}
+  .j-row.glob .j-lbl{color:var(--text);}
+  .j-val{text-align:right;white-space:nowrap;}
+  .j-val b{font-family:'DM Mono',monospace;font-size:14px;font-weight:500;}
+  .j-val b.acc{color:var(--chant);}
+  .j-val b.rea{color:var(--ok);}
+  .j-val b.res{color:var(--reseau);}
+  .j-val b.ven{color:var(--vente);}
+  .j-val .plus-imm{font-size:12px;color:#EBB591;}
+  .j-val .sub .imm{color:#EBB591;}
+  .j-val b.glob{color:var(--text);font-size:15px;}
+  .j-val .sub{display:block;font-size:10.5px;color:var(--muted);margin-top:1px;}
+  .j-warn{font-size:10.5px;color:var(--warn);padding:0 12px 8px;margin-top:-2px;}
+  .j-warn:empty{display:none;}
+  .j-vide{font-size:12px;color:var(--muted);padding:6px 0 4px;}
+
+  /* ---------- Pavé Trésorerie du mois (à droite de la jauge CA, même hauteur) ----------
+     Tableau sur 3 mois : Chantiers | Réseau | Vente matériel (cumul mensuel) | TOTAL du mois */
+  .treso{display:flex;flex-direction:column;}
+  .treso::before{background:linear-gradient(90deg,var(--leads),var(--ok));}
+  .treso-body{flex:1;display:flex;flex-direction:column;justify-content:center;gap:9px;padding:0 12px 8px;}
+  /* Tableau : une ligne par mois ; colonnes Chantiers | Réseau | Vente matériel | TOTAL */
+  .t-table{display:grid;grid-template-columns:34px repeat(3,minmax(0,1fr)) auto;column-gap:12px;row-gap:9px;align-items:center;}
+  .t-table.seul{grid-template-columns:34px minmax(0,1fr);}
+  .t-th{display:flex;align-items:center;gap:6px;min-width:0;}
+  .t-th.tot{justify-content:flex-end;}
+  .t-col-titre{font-size:10px;font-weight:800;letter-spacing:.9px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+  .t-col-titre.ch{color:var(--chant);} .t-col-titre.re{color:var(--reseau);} .t-col-titre.ve{color:var(--vente);} .t-col-titre.tot{color:var(--text);}
+  .t-leg{display:flex;align-items:flex-start;gap:4px;min-width:0;}
+  .t-leg i{display:inline-block;width:9px;height:9px;border-radius:2px;flex-shrink:0;margin-top:3px;}
+  .t-leg i.t-i2{margin-left:6px;}
+  .t-note{display:block;}
+  .t-lien{margin-left:auto;flex-shrink:0;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;
+    color:var(--muted);text-decoration:none;border:1px solid var(--border);border-radius:5px;}
+  .t-lien:hover{color:var(--text);border-color:var(--muted);}
+  .t-lbl{font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);}
+  .t-lbl.cur{color:var(--text);}
+  .t-cell{display:flex;align-items:center;gap:7px;min-width:0;}
+  .t-cell .j-track{flex:1;min-width:0;}
+  .t-cell.t-na{justify-content:flex-end;color:var(--muted);font-family:'DM Mono',monospace;}
+  .t-val{text-align:right;white-space:nowrap;}
+  .t-val b{font-family:'DM Mono',monospace;font-size:12.5px;font-weight:500;}
+  .t-val b.acc{color:var(--chant);} .t-val b.res{color:var(--reseau);} .t-val b.ven{color:var(--vente);}
+  .t-tot{text-align:right;white-space:nowrap;background:rgba(255,255,255,.045);border-radius:6px;padding:3px 8px;}
+  .t-tot.cur{background:rgba(255,255,255,.085);}
+  .t-tot b{font-family:'DM Mono',monospace;font-size:13.5px;font-weight:600;color:var(--text);}
+  .t-table .t-foot{align-self:start;margin-top:2px;}
+  .t-foot.tot{text-align:right;white-space:normal;}
+  .t-lbl-pied{align-self:start;margin-top:3px;font-weight:600;}
+  .t-foot{font-size:10.5px;color:var(--muted);margin-top:7px;display:flex;flex-direction:column;gap:2px;line-height:1.35;}
+  .t-foot b{color:var(--text);font-weight:600;white-space:nowrap;}
+  .j-seg.ch-ok,  .t-leg i.ch-ok {background:linear-gradient(90deg,#B85A24,var(--chant));}   /* chantiers encaissés */
+  .j-seg.ch-att, .t-leg i.ch-att{background:linear-gradient(90deg,#D99466,#E8B48E);}        /* chantiers à encaisser (pastel) */
+  .j-seg.re-ok,  .t-leg i.re-ok {background:linear-gradient(90deg,#B4457E,var(--reseau));}  /* réseau : règlements validés */
+  .j-seg.re-att, .t-leg i.re-att{background:linear-gradient(90deg,#E7A3C3,#F2C7DA);}        /* réseau : à encaisser (pastel) */
+  .j-seg.ve-com, .t-leg i.ve-com{background:linear-gradient(90deg,#1B8A80,var(--vente));}   /* commissions */
+  .j-seg.ve-con, .t-leg i.ve-con{background:linear-gradient(90deg,#6CCBC1,#A8E4DD);}        /* consommables (pastel) */
+
+  .hbtn{min-width:26px;height:24px;padding:0 6px;display:inline-flex;align-items:center;justify-content:center;gap:4px;
+    border:1px solid var(--border);border-radius:6px;color:var(--muted);background:transparent;text-decoration:none;
+    font-size:12px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;white-space:nowrap;}
+  .hbtn:hover{color:var(--c);border-color:var(--c);}
+  .loading{opacity:.55;pointer-events:none;}
+  .err{background:var(--late-bg);color:var(--late);border:1px solid var(--late);border-radius:6px;margin:10px 14px;padding:8px 10px;font-size:12px;flex-shrink:0;}
+  .tiles .err{margin:6px 8px;padding:5px 7px;font-size:10.5px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--surface3);border:1px solid var(--border2);
+    color:var(--text);padding:10px 16px;border-radius:8px;font-size:13px;z-index:60;opacity:0;transition:opacity .25s;pointer-events:none;}
+  .toast.show{opacity:1;}
+  /* Bandeau « Idée effacée — Annuler » */
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:40;padding:16px;}
+  .modal-bg.show{display:flex;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:10px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:20px;}
+  .modal h3{font-size:17px;font-weight:800;margin-bottom:4px;}
+  .modal p.help{color:var(--muted);font-size:12px;margin-bottom:14px;line-height:1.5;}
+  .field{margin-bottom:12px;}
+  .field label{display:block;font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:5px;}
+  .field input{width:100%;}
+  .secret-wrap{display:flex;gap:6px;}
+  .secret-wrap input{flex:1;min-width:0;}
+  .secret{-webkit-text-security:disc;}          /* jeton masqué sans être un champ « mot de passe » */
+  .secret.voir{-webkit-text-security:none;}
+  .secret-eye{padding:6px 10px;flex-shrink:0;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;}
+  details summary{cursor:pointer;color:var(--muted);font-size:12px;font-weight:700;margin:6px 0 10px;}
+  /* ---------- Mise en page de ce tableau de bord (lecture seule) ---------- */
+  .tdb{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:stretch;}
+  .tdb .jauge{margin:0;}
+  .ro{font-size:11px;color:var(--muted);border:1px solid var(--border);border-radius:9px;padding:1px 8px;white-space:nowrap;}
+  .maj{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);text-transform:none;}
+  @media (max-width:1000px){ .tdb{grid-template-columns:1fr;} }
+  @media (max-width:700px){
+    .app-header{padding:0 12px;}
+    .brand .sub,.clock,.ro{display:none;}
+    .brand{flex:1;} .brand > div:last-child{min-width:0;}
+    .brand h1{font-size:14px;white-space:normal;line-height:1.15;}
+    .header-actions{gap:6px;} #selCommercial{max-width:120px;padding:7px 6px;}
+    #btnRefresh .txt{display:none;}
+    .wrap{padding:10px 10px 12px;}
+    .greet h2{font-size:17px;}
+    .greet .date{font-size:12px;}
+    .jauge-body{display:flex;flex-direction:column;align-items:stretch;gap:8px;}
+    .j-row{display:grid;grid-template-columns:1fr auto;grid-template-areas:'lbl val' 'track track' 'sub sub';row-gap:3px;column-gap:8px;align-items:center;}
+    .j-lbl{grid-area:lbl;} .j-track{grid-area:track;}
+    .j-val{display:contents;} .j-val b{grid-area:val;text-align:right;white-space:nowrap;}
+    .j-val .sub{grid-area:sub;margin:0;white-space:normal;}
+    .j-row.j-axe{display:block;margin:0 0 -2px;} .j-row.j-axe > div:not(.j-axe-track){display:none;}
+    .j-lbl br{display:none;}
+    .jauge-head{flex-wrap:wrap;row-gap:2px;}
+    .jauge-info{order:3;flex-basis:100%;margin-left:0;}
+    .jauge-head .hbtn{margin-left:auto;}
+    .t-table{column-gap:8px;row-gap:8px;grid-template-columns:30px repeat(3,minmax(0,1fr)) auto;}
+    .t-col-titre{white-space:normal;letter-spacing:.5px;font-size:9.5px;line-height:1.2;}
+    .t-th .t-lien{display:none;}
+    .t-cell{flex-direction:column;align-items:stretch;gap:3px;}
+    .t-cell .j-track{flex:none;height:8px;}
+    .t-val b{font-size:11.5px;}
+    .t-tot{padding:3px 6px;}
+    .t-tot b{font-size:12px;}
+    .t-foot{font-size:9.5px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand">
+    <div class="brand-logo">A</div>
+    <div>
+      <h1>Tableau de bord CA et Trésorerie</h1>
+      <div class="sub">Repris de « Mon écran » — lecture seule</div>
+    </div>
+  </div>
+  <div class="header-actions">
+    <span class="ro" title="Cette page affiche les chiffres sans rien modifier dans Airtable">👁 Lecture seule</span>
+    <span class="clock" id="clock">--:--</span>
+    <select id="selCommercial" title="Choisir la vue">
+      <option value="Tous">AEROGOMM</option>
+      <option value="Carole">L'Atelier de Carole</option>
+    </select>
+    <button class="btn btn-primary" id="btnRefresh" title="Actualiser">⟳ <span class="txt">Actualiser</span></button>
+    <button class="btn btn-ghost" id="btnConfig" title="Configuration">⚙</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="greet">
+    <h2 id="greetTxt">Bonjour Carole</h2>
+    <span class="date"><span id="dateTxt"></span> <span class="maj" id="majTxt"></span></span>
+  </div>
+
+  <div class="tdb">
+    <!-- Jauge : CA du mois en cours (montants HT) -->
+    <section class="jauge" id="p-jauge" style="--c:var(--chant)">
+      <div class="jauge-head">
+        <span class="jauge-titre">📊 CA du mois <span class="mois" id="jMois"></span></span>
+        <span class="jauge-info" id="jInfo"></span>
+        <a class="hbtn" id="jOpen" target="_blank" rel="noopener" title="Ouvrir Gestion chantiers">↗</a>
+      </div>
+      <div class="jauge-body" id="jBody"></div>
+      <div class="j-warn" id="jWarn"></div>
+    </section>
+    <!-- Pavé : Trésorerie du mois — mois en cours + 2 mois suivants, TTC -->
+    <section class="jauge treso" id="p-treso">
+      <div class="jauge-head">
+        <span class="jauge-titre">💶 Trésorerie du mois <span class="mois" id="tMois"></span></span>
+        <span class="jauge-info" id="tInfo"></span>
+      </div>
+      <div class="treso-body" id="tBody"></div>
+      <div class="j-warn" id="tWarn"></div>
+    </section>
+  </div>
+</div>
+
+<!-- Configuration (gardée sur cet appareil uniquement) -->
+<div class="modal-bg" id="modalCfg">
+  <form class="modal" id="cfgForm" autocomplete="off" novalidate onsubmit="return false">
+    <h3>⚙ Configuration</h3>
+    <p class="help">Ces réglages sont gardés sur cet appareil uniquement (c'est normal de devoir les saisir une fois par appareil).
+      Si « Mon écran » ou la Trésorerie est déjà configuré sur cet appareil, le jeton est repris automatiquement.
+      Cette page ne fait que lire Airtable : elle ne modifie aucune donnée.</p>
+    <div class="field"><label for="cfgToken">Jeton Airtable (PAT)</label>
+      <div class="secret-wrap">
+        <input id="cfgToken" name="airtable-jeton" type="text" class="secret" placeholder="pat..." autocomplete="off" spellcheck="false"
+               autocapitalize="off" data-lpignore="true" data-1p-ignore data-form-type="other">
+        <button type="button" class="btn btn-ghost secret-eye" data-eye="cfgToken" title="Afficher / masquer le jeton">👁</button>
+      </div>
+    </div>
+    <div class="field"><label for="cfgBase">ID de la base Airtable (CRM)</label><input id="cfgBase" placeholder="app..." autocomplete="off" spellcheck="false"></div>
+    <details>
+      <summary>Réseau (leads aerogommage)</summary>
+      <div class="field"><label for="cfgResBase">Base Airtable du réseau</label><input id="cfgResBase" placeholder="appaGCOS3oYqU6DQh" autocomplete="off" spellcheck="false"></div>
+      <div class="field"><label for="cfgResToken">Jeton Airtable du réseau — facultatif (vide = même jeton qu'au-dessus)</label>
+        <div class="secret-wrap">
+          <input id="cfgResToken" name="airtable-jeton-reseau" type="text" class="secret" placeholder="pat..." autocomplete="off" spellcheck="false"
+                 autocapitalize="off" data-lpignore="true" data-1p-ignore data-form-type="other">
+          <button type="button" class="btn btn-ghost secret-eye" data-eye="cfgResToken" title="Afficher / masquer le jeton">👁</button>
+        </div>
+      </div>
+    </details>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="cfgCancel">Annuler</button>
+      <button type="button" class="btn btn-primary" id="cfgSave">Enregistrer</button>
+    </div>
+  </form>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   TABLEAU DE BORD CA ET TRÉSORERIE — AEROGOMM (lecture seule)
+   Reprend à l'identique les pavés « CA du mois » et « Trésorerie du mois » de Mon écran
+   (mêmes tables, mêmes calculs). Aucune écriture dans Airtable.
+   ========================================================= */
+const DEFAULT_BASE = 'appeDIbbdUiiO529W';
+const DEFAULT_RESEAU_BASE = 'appaGCOS3oYqU6DQh';
+const T = {
+  leads:     'tblfp281M08EHR8b7', // "Table 1"
+  chantiers: 'tbluIZhRtzzJQww2G', // "Chantiers"
+  vente:     'tbl2L9MhGw0qp9NCh'  // "VenteMateriel"
+};
+const DEFAULT_URLS = {
+  chantiers: 'https://aerogomm.github.io/crmcommerciaux/gestion_chantiers.html',
+  tiers:     'https://aerogomm.github.io/crm-prospection/tiers_externes.html',
+  vente:     'https://aerogomm.github.io/vente-materiel/vente_materiel.html'
+};
+
+/* ---------- Configuration (localStorage) ----------
+   Réglages propres à cette page (préfixe tdbca_), sinon ceux de Mon écran (monecran_), sinon ceux de la Trésorerie.
+   Objectifs de jauge et prix d'abonnement : ceux réglés dans Mon écran, sinon valeurs par défaut. */
+const LS  = k => 'tdbca_' + k;
+const LSM = k => 'monecran_' + k;
+const lire = (k, ...autres) => { for(const c of [LS(k), LSM(k), ...autres]){ const v = localStorage.getItem(c); if(v) return v; } return ''; };
+function numCfg(k, def){ const v = localStorage.getItem(LSM(k)); const n = parseFloat(v); return (v===null || v==='' || isNaN(n)) ? def : n; }
+function getCfg(){
+  return {
+    token: lire('token', 'treso_at_token'),
+    base:  lire('base',  'treso_at_base') || DEFAULT_BASE,
+    auto:  5,
+    objMini: numCfg('objmini', 25000),
+    objMax:  numCfg('objmax', 40000),
+    prixAbo: numCfg('prixabo', 300),
+    prixExt: numCfg('prixext', 500),
+    reseauBase:  lire('reseau_base') || DEFAULT_RESEAU_BASE,
+    reseauToken: lire('reseau_token'),
+    urls: {
+      chantiers: localStorage.getItem(LSM('url_chantiers')) || DEFAULT_URLS.chantiers,
+      tiers:     localStorage.getItem(LSM('url_tiers'))     || DEFAULT_URLS.tiers,
+      vente:     localStorage.getItem(LSM('url_vente'))     || DEFAULT_URLS.vente
+    }
+  };
+}
+let cfg = getCfg();
+
+/* ---------- Dates et utilitaires ---------- */
+function ymd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+let TODAY = ymd(new Date());
+function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function norm(s){ return String(s??'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+function euro(n){ return (Number(n)||0).toLocaleString('fr-FR',{maximumFractionDigits:0})+' €'; }
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),2500); }
+
+const sel = document.getElementById('selCommercial');
+
+/* ---------- Airtable : lecture seule ---------- */
+async function atList(table, fields, formula, base, token){
+  base = base || cfg.base; token = token || cfg.token;
+  let out = [], offset = '';
+  do{
+    const p = new URLSearchParams();
+    fields.forEach(f=>p.append('fields[]',f));
+    if(formula) p.append('filterByFormula',formula);
+    p.append('pageSize','100');
+    if(offset) p.append('offset',offset);
+    const r = await fetch(`https://api.airtable.com/v0/${base}/${encodeURIComponent(table)}?${p}`,{headers:{Authorization:'Bearer '+token}});
+    if(!r.ok){ const t = await r.text(); throw new Error('Airtable '+r.status+' — '+t.slice(0,160)); }
+    const j = await r.json();
+    out = out.concat(j.records||[]);
+    offset = j.offset || '';
+  } while(offset);
+  return out;
+}
+
+/* =========================================================
+   JAUGE — CA du mois en cours (montants HT)
+   • Acceptés : chantiers dont la date prévue (à défaut la date de début d'intervention) tombe dans le mois,
+     comme dans la vue « Chantiers acceptés » de Gestion chantiers.
+     + en pastel au bout de la barre : fiches Leads commerciaux au statut « Imminent » (valorisation HT),
+       pour voir où on en serait s'ils signent (non comptées dans le Prévisible global).
+   • Réalisés : chantiers terminés (Terminé / A facturer, Facturé, Soldé) dont la fin d'intervention tombe dans le mois.
+   • Réseau : abonnés facturés de leads aerogommage × abonnement mensuel (base Airtable du réseau).
+   • Vente matériel : commissions des ventes dont la date de commande tombe dans le mois
+     (statuts « Matériel vendu » à « Commission payée ») ; le montant du matériel est affiché pour information.
+   • Prévisible global = chantiers acceptés + réseau + vente matériel.
+   • Curseurs : objectif mini (25 000 € par défaut) et fin de jauge (40 000 €), réglables dans ⚙.
+   • Dossiers de Carole (L'Atelier) mis à part, comme dans Gestion chantiers ;
+     « Carole » choisie dans le filtre en haut = vue Atelier (chantiers seulement).
+   ========================================================= */
+let JAUGE_RECS = [], ERR_JAUGE = '', jaugeChargee = false, jaugeAnimee = false;
+const STATUTS_REALISES = ['termine / a facturer','termine','facture','solde'];
+const RESEAU = { charge:false, err:'', apps:[], ext:new Set(), valides:new Set(), gratuits:new Set(),
+                 parMois:{} };   // parMois["AAAA-MM"] = { ext, valides, extValides } (mois en cours + 2 suivants, pavé Trésorerie)
+
+async function loadJauge(){
+  try{
+    JAUGE_RECS = await atList(T.chantiers,
+      ['StatutChantier','Valorisation','DateChantierPrevue','DateDebutIntervention','DateFinIntervention','Commercial',
+       // encaissements, pour le pavé Trésorerie du mois (même lecture que « 💰 Trésorerie Chantiers »)
+       'Acompte','AcompteRecu','DateAcompte','MontantFacture','DateFacture','DateReceptionSoldePrevue','Paye'], '');
+    ERR_JAUGE = '';
+  }catch(e){ ERR_JAUGE = e.message; }
+  jaugeChargee = true;
+  renderJauge();
+}
+
+/* Réseau : lu dans la base de leads aerogommage (tables Applicateurs, Carnet_Suivi, Historique) */
+async function loadReseau(){
+  const base = cfg.reseauBase || DEFAULT_RESEAU_BASE, token = cfg.reseauToken || cfg.token;
+  const now = new Date(), y = now.getFullYear(), m = now.getMonth()+1;
+  const py = m===1 ? y-1 : y, pm = m===1 ? 12 : m-1;          // mois précédent
+  // Carnet de suivi du mois en cours et des 2 mois suivants (les règlements peuvent arriver en avance)
+  const MOIS3 = [0,1,2].map(moisPlus);
+  const formuleCarnet = 'OR(' + MOIS3.map(k=>{ const [a,mm] = k.split('-'); return `AND({annee}=${+a},{mois}=${+mm})`; }).join(',') + ')';
+  try{
+    const [apps, carnets, histo] = await Promise.all([
+      atList('Applicateurs', ['nom','cat','interne','depart_reseau'], '', base, token),
+      atList('Carnet_Suivi', ['applicateur','annee','mois','extension_active','reglement_valide','reglement_ext_valide'], formuleCarnet, base, token),
+      atList('Historique',   ['applicateur','annee','mois','facturation'], `AND({annee}=${py},{mois}=${pm})`, base, token)
+    ]);
+    RESEAU.apps     = apps.map(r=>({ id:r.id, ...r.fields }));
+    RESEAU.parMois  = {};
+    MOIS3.forEach(k=>{
+      const c = carnets.filter(r=>`${r.fields.annee}-${String(r.fields.mois).padStart(2,'0')}` === k);
+      const ids = champ => new Set(c.filter(r=>r.fields[champ]).map(r=>r.fields.applicateur));
+      RESEAU.parMois[k] = { ext:ids('extension_active'), valides:ids('reglement_valide'), extValides:ids('reglement_ext_valide') };
+    });
+    // jauge CA : mois en cours seulement (calcul inchangé)
+    RESEAU.ext      = RESEAU.parMois[MOIS3[0]].ext;
+    RESEAU.valides  = RESEAU.parMois[MOIS3[0]].valides;
+    RESEAU.gratuits = new Set(histo.filter(r=>r.fields.facturation==='gratuit').map(r=>r.fields.applicateur));
+    RESEAU.err = '';
+  }catch(e){
+    RESEAU.err = /\b(401|403|404)\b/.test(e.message)
+      ? "pas d'accès à la base « leads aerogommage » avec ce jeton (voir ⚙ → Jauge : objectifs et réseau)"
+      : e.message;
+  }
+  RESEAU.charge = true;
+  renderJauge();
+}
+
+/* CA du mois = abonnés facturés × abonnement (tarif extension si l'extension 13–20 est active ce mois-ci).
+   Abonnés facturés = abonnés de leads aerogommage, hors internes et départs du réseau.
+   Mois gratuit signalé par leads aerogommage (historique du mois précédent) : non facturé,
+   sauf si le règlement du mois a été validé dans leads aerogommage. */
+function calcReseau(){
+  let ca = 0, nFact = 0, nExt = 0, nGratuit = 0;
+  RESEAU.apps.filter(a=>a.cat==='abonne' && !a.interne && !a.depart_reseau).forEach(a=>{
+    if(RESEAU.gratuits.has(a.id) && !RESEAU.valides.has(a.id)){ nGratuit++; return; }
+    nFact++;
+    if(RESEAU.ext.has(a.id)){ nExt++; ca += cfg.prixExt; } else ca += cfg.prixAbo;
+  });
+  return { nFact, nExt, nGratuit, ca };
+}
+
+/* Pavé Trésorerie : abonnements réseau du mois en cours et des 2 mois suivants, en TTC.
+   Mêmes abonnés que la jauge CA. Encaissé = règlement validé dans leads aerogommage pour ce mois
+   (et règlement de l'extension validé, pour le supplément extension).
+   Mois en cours : mois gratuits déduits comme dans la jauge CA.
+   Mois suivants : prévision — mois gratuits et extensions pas encore connus (sauf déjà notés dans le carnet). */
+const TVA_RESEAU = 1.20;
+function calcReseauTreso(MOIS){
+  const actifs = RESEAU.apps.filter(a=>a.cat==='abonne' && !a.interne && !a.depart_reseau);
+  return MOIS.map((m,i)=>{
+    const pm = RESEAU.parMois[m] || { ext:new Set(), valides:new Set(), extValides:new Set() };
+    let recu = 0, att = 0, n = 0, nRecu = 0, nExt = 0, nGratuit = 0;
+    actifs.forEach(a=>{
+      if(i===0 && RESEAU.gratuits.has(a.id) && !pm.valides.has(a.id)){ nGratuit++; return; }
+      const ext = pm.ext.has(a.id);
+      const base = cfg.prixAbo * TVA_RESEAU, sup = ext ? Math.max(0, cfg.prixExt - cfg.prixAbo) * TVA_RESEAU : 0;
+      n++; if(ext) nExt++;
+      if(pm.valides.has(a.id)){ recu += base; nRecu++; } else att += base;
+      if(sup){ if(pm.extValides.has(a.id)) recu += sup; else att += sup; }
+    });
+    return { recu, att, tot:recu+att, n, nRecu, nExt, nGratuit, prevision:i>0 };
+  });
+}
+
+/* Vente matériel : lue dans la table « VenteMateriel » (même base que les CRM).
+   Chargée juste après la jauge chantiers, pour ne pas envoyer trop de requêtes à Airtable en même temps. */
+let VENTE_RECS = [], ERR_VENTE = '', venteChargee = false;
+const STATUTS_VENDUS  = ['materiel vendu','installation a faire','commission due','commission payee','commission paye'];
+const STATUTS_VENDUS_OUVERTS = ['materiel vendu','installation a faire','commission due'];   // pour l'alerte « sans date »
+async function loadVenteJauge(){
+  try{
+    // ventes conclues (jauge CA) + toutes les fiches avec une commission (pavé Trésorerie, comme « Commandes analysées »)
+    VENTE_RECS = await atList(T.vente, ['Statut','MontantCommission','Valorisation','DateCommande','DateMiseEnRoute','DateCommission','CommissionPayee'],
+      "OR(FIND('vendu',LOWER({Statut})),FIND('installation',LOWER({Statut})),FIND('commission',LOWER({Statut})),{MontantCommission}>0)");
+    ERR_VENTE = '';
+  }catch(e){ ERR_VENTE = e.message; }
+  venteChargee = true;
+  renderJauge();
+}
+/* Leads commerciaux au statut « Imminent » : prolongent la barre des acceptés, en pastel.
+   Chargés après la vente matériel (toujours pour étaler les requêtes Airtable). */
+let IMM_RECS = [], ERR_IMM = '', immCharge = false;
+async function loadImminents(){
+  try{
+    IMM_RECS = await atList(T.leads, ['Statut','Valorisation','Commercial'], "{Statut}='Imminent'");
+    ERR_IMM = '';
+  }catch(e){ ERR_IMM = e.message; }
+  immCharge = true;
+  renderJauge();
+}
+
+function calcVente(mois){
+  const vendus = VENTE_RECS.filter(r=>STATUTS_VENDUS.includes(norm(r.fields.Statut)));
+  const duMois = vendus.filter(r=>String(r.fields.DateCommande||'').slice(0,7)===mois);
+  const total = (l, champ) => l.reduce((s,r)=>s+(Number(r.fields[champ])||0),0);
+  return {
+    n: duMois.length,
+    ca: total(duMois, 'MontantCommission'),                        // commissions = CA d'AEROGOMM
+    materiel: total(duMois, 'Valorisation'),                       // montant du matériel, pour information
+    sansComm: duMois.filter(r=>!Number(r.fields.MontantCommission)).length,
+    sansDate: vendus.filter(r=>!r.fields.DateCommande && STATUTS_VENDUS_OUVERTS.includes(norm(r.fields.Statut))).length
+  };
+}
+
+function renderJauge(){ renderJaugeCA(); renderTreso(); }       // les deux pavés du bas se mettent à jour ensemble
+
+function renderJaugeCA(){
+  const mois = TODAY.slice(0,7);                                   // "AAAA-MM"
+  const nomMois = new Date(TODAY+'T00:00:00').toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
+  document.getElementById('jMois').textContent = '— '+nomMois;
+  document.getElementById('tMois').textContent = '— '+nomMois;    // pavé Trésorerie du mois
+  document.getElementById('jOpen').href = cfg.urls.chantiers;
+  const body = document.getElementById('jBody'), warn = document.getElementById('jWarn'), info = document.getElementById('jInfo');
+  const modeAtelier = /carole/i.test(sel.value);
+  info.textContent = modeAtelier ? "L'Atelier de Carole · montants HT" : 'Montants HT · hors Atelier';
+  if(!cfg.token){ body.innerHTML = `<div class="j-vide">Configure ton jeton Airtable (⚙) pour afficher la jauge</div>`; warn.textContent = ''; return; }
+  if(ERR_JAUGE){ body.innerHTML = `<div class="err" style="margin:2px 0 4px">⚠ ${esc(ERR_JAUGE)}</div>`; warn.textContent = ''; return; }
+  if(!jaugeChargee){ body.innerHTML = `<div class="j-vide">Chargement…</div>`; return; }
+
+  // ---- Chantiers du mois
+  const recs = JAUGE_RECS.filter(r=>{ const c = /carole/i.test(String(r.fields.Commercial||'')); return modeAtelier ? c : !c; });
+  const val = r => Number(r.fields.Valorisation) || 0;
+  const somme = l => l.reduce((s,r)=>s+val(r),0);
+  const realise = r => STATUTS_REALISES.includes(norm(r.fields.StatutChantier));
+  const dateAcc = r => String(r.fields.DateChantierPrevue || r.fields.DateDebutIntervention || '');
+  const acc = recs.filter(r=>dateAcc(r).slice(0,7)===mois);
+  const rea = recs.filter(r=>realise(r) &&
+    String(r.fields.DateFinIntervention||r.fields.DateDebutIntervention||r.fields.DateChantierPrevue||'').slice(0,7)===mois);
+  const tAcc = somme(acc), tRea = somme(rea);
+  const nb = n => n+' chantier'+(n>1?'s':'');
+
+  // ---- Leads « Imminent » (même règle Atelier / hors Atelier que les chantiers)
+  const imm = (immCharge && !ERR_IMM) ? IMM_RECS.filter(r=>norm(r.fields.Statut)==='imminent' &&
+    /carole/i.test(String(r.fields.Commercial||'')) === modeAtelier) : [];
+  const tImm = somme(imm), tAccImm = tAcc + tImm;
+
+  // ---- Réseau, vente matériel et global (pas dans la vue Atelier)
+  const R = (!modeAtelier && RESEAU.charge && !RESEAU.err) ? calcReseau() : null;
+  const V = (!modeAtelier && venteChargee && !ERR_VENTE) ? calcVente(mois) : null;
+  const tRes = R ? R.ca : 0, tVen = V ? V.ca : 0, tGlob = tAcc + tRes + tVen;
+  const nbV = n => n+' vente'+(n>1?'s':'');
+
+  // ---- Échelle : de 0 à la fin de jauge (40 000 € par défaut)
+  const objMini = Math.max(0, cfg.objMini || 0), objMax = Math.max(0, cfg.objMax || 0);
+  const avecCurseurs = !modeAtelier && objMax > 0;
+  const echelle = avecCurseurs ? objMax : Math.max(tAccImm, tRea, modeAtelier ? 0 : tGlob, 1);
+  const pct = v => Math.max(0, Math.min(100, v/echelle*100)).toFixed(1);
+  const miniVisible = avecCurseurs && objMini > 0 && objMini < echelle;
+  const curseurs = fort => !avecCurseurs ? '' :
+      (miniVisible ? `<div class="j-obj ${fort?'fort':'leger'}" style="left:${pct(objMini)}%" title="Objectif mini : ${euro(objMini)} HT"></div>` : '')
+    + `<div class="j-fin ${fort?'':'leger'}" title="Fin de jauge : ${euro(objMax)} HT"></div>`;
+  const anim = !jaugeAnimee;                                     // remplissage animé au premier affichage
+  const larg = v => anim ? 0 : pct(v);
+  const barre = (cls, v, fort) => `<div class="j-track"><div class="j-fill ${cls}" data-w="${pct(v)}" style="width:${larg(v)}%"></div>${curseurs(fort)}</div>`;
+  const seg = (cls, v) => `<div class="j-seg ${cls}" data-w="${pct(v)}" style="width:${larg(v)}%"></div>`;
+  const statut = v => !avecCurseurs ? ''
+    : v >= objMax ? ' · 🏆 objectif final atteint'
+    : (objMini && v >= objMini) ? ` · ✓ mini atteint, reste ${euro(objMax-v)}`
+    : objMini ? ` · reste ${euro(objMini-v)} pour le mini` : '';
+  const ligne = (lbl, piste, valeur, titre, cls='') =>
+    `<div class="j-row ${cls}" title="${esc(titre)}"><div class="j-lbl">${lbl}</div>${piste}<div class="j-val">${valeur}</div></div>`;
+
+  let html = '';
+  if(avecCurseurs){
+    html += `<div class="j-row j-axe"><div></div><div class="j-axe-track">
+      <span style="left:0">0</span>
+      ${miniVisible ? `<span class="ax-mini" style="left:${pct(objMini)}%">${euro(objMini)} · mini</span>` : ''}
+      <span class="ax-fin">${euro(objMax)}</span>
+    </div><div></div></div>`;
+  }
+  // Acceptés : chantiers en orange plein + leads imminents en orange pastel à la suite
+  const nbImm = imm.length;
+  const titreAcc = `Chantiers dont la date prévue (ou à défaut la date de début) tombe en ${nomMois}.`
+    + (nbImm ? ` En pastel : ${nbImm} lead${nbImm>1?'s':''} commercia${nbImm>1?'ux':'l'} au statut « Imminent » (${euro(tImm)} HT). `
+      + `Avec ${nbImm>1?'eux':'lui'} : ${euro(tAccImm)} HT${statut(tAccImm)}.` : '')
+    + (ERR_IMM ? ` Leads imminents non chargés : ${ERR_IMM}` : '');
+  html += ligne('Acceptés',
+    `<div class="j-track"><div class="j-stack">${seg('acc', tAcc)}${seg('imm', tImm)}</div>${curseurs(true)}</div>`,
+    `<b class="acc">${euro(tAcc)} HT${tImm ? `<span class="plus-imm"> + ${euro(tImm)}</span>` : ''}</b>`
+    + `<span class="sub">${nb(acc.length)}${nbImm ? ` · <span class="imm">${nbImm} imminent${nbImm>1?'s':''}</span>` : ''}${statut(tAcc)}</span>`,
+    titreAcc);
+  html += ligne('Réalisés', barre('rea', tRea, false),
+    `<b class="rea">${euro(tRea)} HT</b><span class="sub">${nb(rea.length)}${tAcc ? ' · '+Math.round(tRea/tAcc*100)+' % de l\'accepté' : ''}</span>`,
+    `Chantiers terminés (Terminé / A facturer, Facturé, Soldé) dont la fin d'intervention tombe en ${nomMois}`);
+
+  if(!modeAtelier){
+    const titreRes = `Abonnés facturés ce mois × ${euro(cfg.prixAbo)} HT (${euro(cfg.prixExt)} HT avec l'extension 13–20 du mois). `
+      + `Mois gratuit signalé par leads aerogommage : non facturé, sauf si le règlement du mois a été validé.`;
+    if(R){
+      const det = [R.nExt ? `dont ${R.nExt} avec l'extension 13–20` : '', R.nGratuit ? `${R.nGratuit} en mois gratuit (non facturé${R.nGratuit>1?'s':''})` : ''].filter(Boolean).join(', ');
+      html += ligne('Réseau', barre('res', tRes, false),
+        `<b class="res">${euro(tRes)} HT</b><span class="sub">${R.nFact} abonné${R.nFact>1?'s':''} facturé${R.nFact>1?'s':''}</span>`,
+        titreRes + (det ? ` (${det}.)` : ''));
+    }else{
+      html += ligne('Réseau', `<div class="j-track j-off"></div>`,
+        `<b class="res">—</b><span class="sub">${RESEAU.err ? 'base réseau inaccessible' : 'chargement…'}</span>`,
+        RESEAU.err || titreRes);
+    }
+
+    const titreVen = `Commissions des ventes de matériel commandées en ${nomMois} (date de commande renseignée), `
+      + `de « Matériel vendu » à « Commission payée ». Le montant du matériel est indiqué pour information.`;
+    if(V){
+      html += ligne('Vente <br>matériel', barre('ven', tVen, false),
+        `<b class="ven">${euro(tVen)} HT</b><span class="sub">${V.n ? `${nbV(V.n)} · ${euro(V.materiel)} de matériel` : 'aucune vente ce mois'}</span>`,
+        titreVen, 'ven');
+    }else{
+      html += ligne('Vente <br>matériel', `<div class="j-track j-off"></div>`,
+        `<b class="ven">—</b><span class="sub">${ERR_VENTE ? 'vente matériel inaccessible' : 'chargement…'}</span>`,
+        ERR_VENTE || titreVen, 'ven');
+    }
+
+    const manque = [R ? '' : 'le réseau', V ? '' : 'la vente'].filter(Boolean);
+    html += ligne('Prévisible <br>global',
+      `<div class="j-track global"><div class="j-stack">${seg('acc', tAcc)}${seg('res', tRes)}${seg('ven', tVen)}</div>${curseurs(true)}</div>`,
+      `<b class="glob">${euro(tGlob)} HT</b><span class="sub">chantiers + réseau + vente${manque.length ? ' (sans '+manque.join(' ni ')+')' : ''}${statut(tGlob)}</span>`,
+      'Chantiers acceptés du mois + CA réseau prévisionnel du mois + commissions vente matériel du mois', 'glob');
+  }
+  body.innerHTML = html;
+  if(anim){ jaugeAnimee = true; requestAnimationFrame(()=>requestAnimationFrame(()=>body.querySelectorAll('.j-fill,.j-seg').forEach(f=>{ f.style.width = f.dataset.w+'%'; }))); }
+
+  // ---- Petites alertes sur les données (comme les ❗ de Gestion chantiers)
+  const sansValo = acc.filter(r=>!val(r)).length;
+  const immSansValo = imm.filter(r=>!val(r)).length;
+  const sansDate = recs.filter(r=>!r.fields.DateChantierPrevue && !r.fields.DateDebutIntervention && !realise(r)).length;
+  const alertes = [];
+  if(sansValo) alertes.push(`⚠ ${nb(sansValo)} du mois sans valorisation`);
+  if(sansDate) alertes.push(`⚠ ${nb(sansDate)} en cours sans date (non compté${sansDate>1?'s':''})`);
+  if(immSansValo) alertes.push(`⚠ ${immSansValo} lead${immSansValo>1?'s':''} imminent${immSansValo>1?'s':''} sans valorisation`);
+  if(ERR_IMM) alertes.push(`⚠ Leads imminents : ${ERR_IMM}`);
+  if(!modeAtelier && RESEAU.err) alertes.push(`⚠ Réseau : ${RESEAU.err}`);
+  if(!modeAtelier && V && V.sansDate) alertes.push(`⚠ ${nbV(V.sansDate)} sans date de commande (non comptée${V.sansDate>1?'s':''})`);
+  if(!modeAtelier && V && V.sansComm) alertes.push(`⚠ ${nbV(V.sansComm)} du mois sans montant de commission`);
+  if(!modeAtelier && ERR_VENTE) alertes.push(`⚠ Vente matériel : ${ERR_VENTE}`);
+  warn.textContent = alertes.join(' · ');
+}
+
+/* =========================================================
+   PAVÉ « TRÉSORERIE DU MOIS » — mois en cours + les 2 mois suivants, montants TTC
+   • Trésorerie chantiers : même calcul que la vue « 💰 Trésorerie Chantiers » de Gestion chantiers.
+       acompte → montant « Acompte », date « DateAcompte », encaissé si « AcompteRecu » coché ;
+       solde   → montant « MontantFacture », date « DateReceptionSoldePrevue » (à défaut « DateFacture »),
+                 encaissé si « Paye » coché.
+   • Réseau : abonnements des applicateurs de leads aerogommage (mêmes abonnés que la jauge CA), TVA 20 % ;
+       encaissé = règlement du mois validé dans leads aerogommage ; mois suivants = prévision (voir calcReseauTreso).
+   • Vente matériel : ligne « Cumul mensuel TTC » de la page « Commandes analysées » :
+       commissions des fiches avec « MontantCommission », rangées au mois de la date de paiement
+       commission prévisionnelle (« DateCommission ») ; à défaut, au mois de la date de mise en route,
+       + consommables du mois (table « Consommables » ; 800 € HT par défaut si rien n'est saisi), TVA 20 %.
+   • Dossiers de Carole (L'Atelier) mis à part, comme la jauge CA ; vue Atelier = chantiers seulement.
+   ========================================================= */
+const CONSO_DEFAUT_HT = 800, TVA_VENTE = 1.20;
+let CONSO = {}, ERR_CONSO = '', consoCharge = false, tresoAnime = false;
+async function loadConso(){
+  try{
+    const recs = await atList('Consommables', ['Mois','Montant'], '');
+    CONSO = {};
+    recs.forEach(r=>{ const m = String(r.fields.Mois||'').trim(); if(m) CONSO[m] = Number(r.fields.Montant)||0; });
+    ERR_CONSO = '';
+  }catch(e){
+    ERR_CONSO = /\b40[34]\b/.test(e.message) ? 'table « Consommables » non lue (800 € HT par mois utilisés)' : e.message;
+  }
+  consoCharge = true;
+  renderTreso();
+}
+/* Date d'encaissement d'une commission vente matériel : date de paiement commission prévue, sinon mise en route */
+function dateEncVente(r){ return String(r.fields.DateCommission || r.fields.DateMiseEnRoute || ''); }
+function moisPlus(n){                                  // "AAAA-MM" du mois en cours décalé de n mois
+  const d = new Date(TODAY+'T00:00:00'); d.setDate(1); d.setMonth(d.getMonth()+n);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+}
+function nomDuMois(cle){ const [a,m] = cle.split('-'); return new Date(+a, +m-1, 1).toLocaleDateString('fr-FR',{month:'long'}); }
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+function renderTreso(){
+  const body = document.getElementById('tBody'), warn = document.getElementById('tWarn');
+  const modeAtelier = /carole/i.test(sel.value);
+  document.getElementById('tInfo').textContent = modeAtelier ? "L'Atelier de Carole · montants TTC" : 'Montants TTC · hors Atelier';
+  if(!cfg.token){ body.innerHTML = `<div class="j-vide">Configure ton jeton Airtable (⚙) pour afficher la trésorerie</div>`; warn.textContent = ''; return; }
+  if(ERR_JAUGE){ body.innerHTML = `<div class="err" style="margin:2px 0 4px">⚠ ${esc(ERR_JAUGE)}</div>`; warn.textContent = ''; return; }
+  if(!jaugeChargee){ body.innerHTML = `<div class="j-vide">Chargement…</div>`; return; }
+
+  const MOIS = [0,1,2].map(moisPlus), NOMS = MOIS.map(nomDuMois);
+  const COURTS = MOIS.map(k=>{ const [a,m] = k.split('-'); return new Date(+a, +m-1, 1).toLocaleDateString('fr-FR',{month:'short'}); });
+  const total = l => l.reduce((s,e)=>s+e.montant,0);
+  const pl = n => n>1 ? 's' : '';
+
+  // ---- Trésorerie chantiers : une ligne par acompte et par solde, chacune avec sa date
+  const evts = [];
+  JAUGE_RECS.filter(r=>/carole/i.test(String(r.fields.Commercial||'')) === modeAtelier).forEach(r=>{
+    const f = r.fields;
+    if(Number(f.Acompte)) evts.push({ montant:Number(f.Acompte), date:String(f.DateAcompte||''), recu:!!f.AcompteRecu });
+    if(Number(f.MontantFacture)) evts.push({ montant:Number(f.MontantFacture),
+      date:String(f.DateReceptionSoldePrevue||f.DateFacture||''), recu:!!f.Paye });
+  });
+  const CH = MOIS.map(m=>{
+    const l = evts.filter(e=>e.date.slice(0,7)===m);
+    const recu = total(l.filter(e=>e.recu)), att = total(l.filter(e=>!e.recu));
+    return { recu, att, tot:recu+att, n:l.length };
+  });
+  const retard = evts.filter(e=>!e.recu && e.date && e.date < MOIS[0]+'-01');
+  const sansDate = evts.filter(e=>!e.recu && !e.date);
+
+  // ---- Vente matériel : cumul mensuel (pas dans la vue Atelier)
+  const venteOK = !modeAtelier && venteChargee && !ERR_VENTE;
+  const analysees = venteOK ? VENTE_RECS.filter(r=>Number(r.fields.MontantCommission)>0) : [];
+  const VE = MOIS.map(m=>{
+    const commHT = analysees.filter(r=>dateEncVente(r).slice(0,7)===m)
+      .reduce((s,r)=>s+Number(r.fields.MontantCommission),0);
+    const saisi = Object.prototype.hasOwnProperty.call(CONSO, m);
+    const consoHT = saisi ? CONSO[m] : CONSO_DEFAUT_HT;
+    return { commHT, consoHT, saisi, comm:commHT*TVA_VENTE, conso:consoHT*TVA_VENTE, tot:(commHT+consoHT)*TVA_VENTE };
+  });
+  const ouvertes = analysees.filter(r=>!['commission payee','commission paye','sans suite'].includes(norm(r.fields.Statut)));
+  const sansMiseEnRoute = ouvertes.filter(r=>!dateEncVente(r)).length;                       // aucune date : non comptée
+  const sansDatePaiement = ouvertes.filter(r=>!r.fields.DateCommission && r.fields.DateMiseEnRoute).length; // comptée à la mise en route
+
+  // ---- Réseau : abonnements des applicateurs (pas dans la vue Atelier)
+  const reseauOK = !modeAtelier && RESEAU.charge && !RESEAU.err;
+  const RE = reseauOK ? calcReseauTreso(MOIS) : null;
+
+  // ---- Échelle commune aux trois jauges (pour comparer les longueurs)
+  const echelle = Math.max(1, ...CH.map(x=>x.tot), ...(reseauOK ? RE.map(x=>x.tot) : []), ...(venteOK ? VE.map(x=>x.tot) : []));
+  const pct = v => Math.max(0, Math.min(100, v/echelle*100)).toFixed(1);
+  const anim = !tresoAnime;
+  const seg = (cls, v) => `<div class="j-seg ${cls}" data-w="${pct(v)}" style="width:${anim ? 0 : pct(v)}%"></div>`;
+  // ---- Tableau : une ligne par mois ; colonnes Chantiers | Réseau | Vente matériel | TOTAL
+  //      (vue Atelier : Chantiers seulement). Chaque case = jauge + montant ; la légende des couleurs
+  //      est en bas de chaque colonne, avec les montants du mois en cours.
+  const cellule = (titre, segs, valeur) =>
+    `<div class="t-cell" title="${esc(titre)}"><div class="j-track"><div class="j-stack">${segs}</div></div><div class="t-val">${valeur}</div></div>`;
+  const indispo = (err) => `<div class="t-cell t-na" title="${esc(err || 'chargement…')}">${err ? '—' : '…'}</div>`;
+
+  const urlLeadsAero = String(cfg.urls.tiers||'').replace(/[^/]*$/, 'leads_aerogommage.html');
+  const urlCommandes = String(cfg.urls.vente||'').replace(/[^/]*$/, 'commandes_analysees.html');
+  const entete = (cls, texte, titre, url, titreLien) =>
+    `<div class="t-th ${cls}"><span class="t-col-titre ${cls}" title="${esc(titre)}">${texte}</span>`
+    + `<a class="t-lien" href="${esc(url)}" target="_blank" rel="noopener" title="${esc(titreLien)}">↗</a></div>`;
+
+  let html = '<div></div>'
+    + entete('ch', 'Chantiers', "Trésorerie chantiers : acomptes et soldes, à leur date d'encaissement prévue", cfg.urls.chantiers, 'Ouvrir Gestion chantiers (vue 💰 Trésorerie Chantiers)');
+  if(!modeAtelier){
+    html += entete('re', 'Réseau', "Abonnements des applicateurs du réseau (leads aerogommage), au mois de l'abonnement", urlLeadsAero, 'Ouvrir leads aerogommage')
+      + entete('ve', 'Vente matériel', 'Commissions au mois de paiement prévu (date de paiement commission, à défaut mise en route) + consommables du mois', urlCommandes, 'Ouvrir Commandes analysées')
+      + `<div class="t-th tot"><span class="t-col-titre tot" title="Chantiers + réseau + vente matériel">Total</span></div>`;
+  }
+
+  const manque = [reseauOK ? '' : 'le réseau', venteOK ? '' : 'la vente'].filter(Boolean);
+  MOIS.forEach((m,i)=>{
+    const x = CH[i];
+    html += `<div class="t-lbl${i===0 ? ' cur' : ''}">${esc(COURTS[i])}</div>`
+      + cellule(`${cap(NOMS[i])} : ${euro(x.tot)} TTC attendus (${x.n} acompte${pl(x.n)} ou solde${pl(x.n)}), dont ${euro(x.recu)} déjà encaissés`,
+          seg('ch-ok', x.recu) + seg('ch-att', x.att), `<b class="acc">${euro(x.tot)}</b>`);
+    if(modeAtelier) return;
+    // Réseau
+    if(reseauOK){
+      const r = RE[i];
+      html += cellule(r.prevision
+          ? `${cap(NOMS[i])} (prévision) : ${r.n} abonné${pl(r.n)} = ${euro(r.tot)} TTC${r.nExt ? ` (dont ${r.nExt} avec l'extension)` : ''} ; `
+            + `${r.nRecu} règlement${pl(r.nRecu)} déjà validé${pl(r.nRecu)}. Mois gratuits et extensions pas encore connus.`
+          : `${cap(NOMS[i])} : ${r.n} abonné${pl(r.n)} facturé${pl(r.n)} = ${euro(r.tot)} TTC${r.nExt ? ` (dont ${r.nExt} avec l'extension)` : ''} ; `
+            + `${r.nRecu} règlement${pl(r.nRecu)} validé${pl(r.nRecu)} (${euro(r.recu)}), ${r.n - r.nRecu} en attente (${euro(r.att)})`
+            + `${r.nGratuit ? ` ; ${r.nGratuit} en mois gratuit (non facturé${pl(r.nGratuit)})` : ''}`,
+        seg('re-ok', r.recu) + seg('re-att', r.att), `<b class="res">${euro(r.tot)}</b>`);
+    } else html += indispo(RESEAU.err ? 'Base réseau inaccessible : '+RESEAU.err : '');
+    // Vente matériel
+    if(venteOK){
+      const v = VE[i];
+      html += cellule(`${cap(NOMS[i])} : commissions ${euro(v.commHT)} HT + consommables ${euro(v.consoHT)} HT`
+          + `${v.saisi ? '' : ' (800 € par défaut, non saisis)'} = ${euro(v.commHT+v.consoHT)} HT, soit ${euro(v.tot)} TTC`,
+        seg('ve-com', v.comm) + seg('ve-con', v.conso), `<b class="ven">${euro(v.tot)}</b>`);
+    } else html += indispo(ERR_VENTE ? 'Vente matériel inaccessible : '+ERR_VENTE : '');
+    // Total du mois
+    const tot = x.tot + (reseauOK ? RE[i].tot : 0) + (venteOK ? VE[i].tot : 0);
+    html += `<div class="t-tot${i===0 ? ' cur' : ''}" title="${esc(`${cap(NOMS[i])} : chantiers ${euro(x.tot)}`
+        + (reseauOK ? ` + réseau ${euro(RE[i].tot)}` : '') + (venteOK ? ` + vente matériel ${euro(VE[i].tot)}` : '')
+        + ` = ${euro(tot)} TTC` + (manque.length ? ` (sans ${manque.join(' ni ')})` : ''))}"><b>${euro(tot)}</b></div>`;
+  });
+
+  // Ligne du bas : légendes + montants du mois en cours
+  const enAttente = RE ? RE[0].n - RE[0].nRecu : 0;
+  const nonSaisis = MOIS.map((m,i)=>VE[i].saisi ? '' : NOMS[i]).filter(Boolean);
+  html += `<div class="t-lbl t-lbl-pied" title="Montants de ${esc(NOMS[0])}">${esc(COURTS[0])}</div>`
+    + `<div class="t-foot"><span class="t-leg"><i class="ch-ok"></i><span><b>${euro(CH[0].recu)}</b> encaissés</span></span>`
+    + `<span class="t-leg"><i class="ch-att"></i><span><b>${euro(CH[0].att)}</b> à encaisser</span></span></div>`;
+  if(!modeAtelier){
+    html += reseauOK
+      ? `<div class="t-foot"><span class="t-leg"><i class="re-ok"></i><span><b>${euro(RE[0].recu)}</b> encaissés</span></span>`
+        + `<span class="t-leg"><i class="re-att"></i><span><b>${euro(RE[0].att)}</b> à encaisser${enAttente ? ` (${enAttente} abonné${pl(enAttente)})` : ''}</span></span></div>`
+      : `<div class="t-foot">${RESEAU.err ? 'base réseau inaccessible' : 'chargement…'}</div>`;
+    html += venteOK
+      ? `<div class="t-foot"><span class="t-leg"><i class="ve-com"></i>commissions <i class="ve-con t-i2"></i>conso.</span>`
+        + `<span class="t-note" title="${nonSaisis.length ? `Consommables non saisis dans Commandes analysées pour : ${esc(nonSaisis.join(', '))}` : ''}">cumul mensuel${nonSaisis.length ? ' · conso. 800 € HT/mois si non saisis' : ''}</span></div>`
+      : `<div class="t-foot">${ERR_VENTE ? 'vente matériel inaccessible' : 'chargement…'}</div>`;
+    html += `<div class="t-foot tot">${manque.length ? `sans ${manque.join(' ni ')}` : ''}</div>`;
+  }
+
+  body.innerHTML = `<div class="t-table${modeAtelier ? ' seul' : ''}">${html}</div>`;
+  if(anim){ tresoAnime = true; requestAnimationFrame(()=>requestAnimationFrame(()=>body.querySelectorAll('.j-seg').forEach(f=>{ f.style.width = f.dataset.w+'%'; }))); }
+
+  // ---- Alertes
+  const alertes = [];
+  if(retard.length) alertes.push(`⚠ ${retard.length} encaissement${pl(retard.length)} chantier en retard (prévu${pl(retard.length)} avant ${NOMS[0]}, non reçu${pl(retard.length)}) : ${euro(total(retard))}`);
+  if(sansDate.length) alertes.push(`⚠ ${sansDate.length} encaissement${pl(sansDate.length)} chantier sans date (non compté${pl(sansDate.length)})`);
+  if(!modeAtelier && sansMiseEnRoute) alertes.push(`⚠ ${sansMiseEnRoute} vente${pl(sansMiseEnRoute)} avec commission sans date de paiement ni de mise en route (non comptée${pl(sansMiseEnRoute)})`);
+  if(!modeAtelier && sansDatePaiement) alertes.push(`⚠ ${sansDatePaiement} vente${pl(sansDatePaiement)} sans date de paiement commission (comptée${pl(sansDatePaiement)} au mois de mise en route)`);
+  if(!modeAtelier && RESEAU.err) alertes.push(`⚠ Réseau : ${RESEAU.err}`);
+  if(!modeAtelier && ERR_VENTE) alertes.push(`⚠ Vente matériel : ${ERR_VENTE}`);
+  if(!modeAtelier && ERR_CONSO) alertes.push(`⚠ Consommables : ${ERR_CONSO}`);
+  warn.textContent = alertes.join(' · ');
+}
+
+
+/* ---------- Chargement ---------- */
+let enCours = false;
+async function loadAll(){
+  if(enCours) return; enCours = true;
+  TODAY = ymd(new Date());
+  if(!cfg.token){ renderJauge(); openCfg(); enCours = false; return; }
+  document.querySelector('.tdb').classList.add('loading');
+  await Promise.all([
+    loadJauge().then(loadVenteJauge).then(loadImminents).then(loadConso),
+    loadReseau()
+  ]);
+  document.querySelector('.tdb').classList.remove('loading');
+  document.getElementById('majTxt').textContent = '· à jour à ' + new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  enCours = false;
+}
+
+/* ---------- Configuration : fenêtre ---------- */
+function openCfg(){
+  document.getElementById('cfgToken').value = cfg.token;
+  document.getElementById('cfgBase').value  = cfg.base;
+  document.getElementById('cfgResBase').value  = cfg.reseauBase;
+  document.getElementById('cfgResToken').value = cfg.reseauToken;
+  document.querySelectorAll('.secret').forEach(i=>i.classList.remove('voir'));
+  document.getElementById('modalCfg').classList.add('show');
+}
+function closeCfg(){ document.getElementById('modalCfg').classList.remove('show'); }
+document.getElementById('btnConfig').onclick = openCfg;
+document.getElementById('cfgCancel').onclick = closeCfg;
+document.querySelectorAll('[data-eye]').forEach(b=>{ b.onclick = ()=>document.getElementById(b.dataset.eye).classList.toggle('voir'); });
+document.getElementById('cfgSave').onclick = ()=>{
+  const set = (k, v)=>{ if(v) localStorage.setItem(LS(k), v); else localStorage.removeItem(LS(k)); };
+  set('token', document.getElementById('cfgToken').value.trim());
+  set('base',  document.getElementById('cfgBase').value.trim());
+  set('reseau_base',  document.getElementById('cfgResBase').value.trim());
+  set('reseau_token', document.getElementById('cfgResToken').value.trim());
+  cfg = getCfg(); closeCfg(); jaugeAnimee = false; tresoAnime = false; loadAll();
+};
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeCfg(); });
+
+/* ---------- Vue : AEROGOMM ou L'Atelier de Carole ---------- */
+sel.value = localStorage.getItem(LS('vue')) || 'Tous';
+sel.onchange = ()=>{ localStorage.setItem(LS('vue'), sel.value); renderJauge(); };
+
+/* ---------- En-tête ---------- */
+function updateGreet(){
+  const h = new Date().getHours();
+  document.getElementById('greetTxt').textContent = (h<18 ? 'Bonjour' : 'Bonsoir') + ' Carole';
+  document.getElementById('dateTxt').textContent = new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+}
+function tick(){
+  document.getElementById('clock').textContent = new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  if(ymd(new Date())!==TODAY){ updateGreet(); loadAll(); }   // passage à minuit
+}
+
+/* ---------- Actualisation (toutes les 5 minutes + au retour sur l'onglet) ---------- */
+document.getElementById('btnRefresh').onclick = ()=>{ loadAll().then(()=>{ if(cfg.token) toast('Données à jour'); }); };
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && cfg.token) loadAll(); });
+setInterval(()=>{ if(cfg.token) loadAll(); }, 5*60000);
+
+updateGreet(); tick(); setInterval(tick, 30000);
+loadAll();
+</script>
+</body>
+</html>
