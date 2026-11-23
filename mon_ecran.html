@@ -45,6 +45,15 @@
   .ticker{flex:1 1 0;min-width:0;overflow:hidden;align-self:stretch;display:flex;align-items:center;margin:0 18px;}
   .ticker-track{display:flex;white-space:pre;will-change:transform;animation:defile linear infinite;}
   .ticker-track span{font-family:'Syne',sans-serif;font-size:19px;font-weight:800;color:var(--accent);}
+  .ticker-edit{flex-shrink:0;margin-right:14px;width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--accent);font-size:16px;font-weight:800;cursor:pointer;line-height:1;}
+  .ticker-edit:hover{background:var(--surface2,rgba(88,166,255,.12));border-color:var(--accent);}
+  .msg-add{display:flex;gap:8px;margin:12px 0 10px;}
+  .msg-add input{flex:1;min-width:0;}
+  .msg-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;}
+  .msg-list li{display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:14px;}
+  .msg-list li span{flex:1;min-width:0;}
+  .msg-list .msg-del{border:none;background:transparent;color:#F85149;font-size:18px;font-weight:800;cursor:pointer;line-height:1;padding:0 4px;}
+  .msg-vide{color:var(--muted);font-size:13px;padding:6px 0;}
   @keyframes defile{from{transform:translateX(0);}to{transform:translateX(-50%);}}
   .clock{font-family:'DM Mono',monospace;font-size:13px;color:var(--muted);margin-right:6px;}
   select,input{background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;
@@ -398,7 +407,7 @@
   /* ---------- Téléphone ---------- */
   @media (max-width:700px){
     .app-header{padding:0 12px;}
-    .brand .sub,.clock,.ticker{display:none;}
+    .brand .sub,.clock,.ticker,.ticker-edit{display:none;}
     #btnRefresh .txt{display:none;}
     .wrap{padding:10px 10px 12px;}
     .greet{margin-bottom:8px;}
@@ -474,6 +483,7 @@
   </div>
   <!-- Messages positifs qui défilent (liste modifiable dans MESSAGES_POSITIFS, en haut du script) -->
   <div class="ticker" aria-hidden="true"><div class="ticker-track" id="tickerTrack"></div></div>
+  <button class="ticker-edit" id="btnMessages" title="Ajouter ou supprimer des messages positifs">✏️</button>
   <div class="header-actions">
     <span class="clock" id="clock">--:--</span>
     <select id="selCommercial" title="Filtrer par commercial">
@@ -651,6 +661,22 @@
 </div>
 
 <div class="toast-undo" id="undoToast"><span id="undoMsg">Idée effacée</span><button id="undoBtn">Annuler</button></div>
+<!-- Fenêtre : gérer les messages positifs du bandeau (table Airtable "MessagesPositifs") -->
+<div class="modal-bg" id="modalMsg">
+  <div class="modal">
+    <h3>✏️ Messages positifs</h3>
+    <p class="help">Les phrases qui défilent en haut de l'écran. Elles sont enregistrées dans Airtable : vous les retrouvez sur tous vos appareils.</p>
+    <div class="msg-add">
+      <input id="msgNew" placeholder="Nouvelle phrase…" autocomplete="off" maxlength="200">
+      <button type="button" class="btn btn-primary" id="msgAddBtn">+ Ajouter</button>
+    </div>
+    <ul class="msg-list" id="msgList"></ul>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="msgClose">Fermer</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -2057,7 +2083,9 @@ document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && cfg.t
 
 /* ---------- Bandeau défilant : messages positifs ----------
    Pour modifier les phrases : changer la liste ci-dessous (une phrase par ligne, entre apostrophes droites ou guillemets). */
-const MESSAGES_POSITIFS = [
+const T_MESSAGES = 'tblyvmnijY8C8NJZG';   // table Airtable "MessagesPositifs" (champs : Message, Ordre)
+// Liste de secours, affichée seulement si Airtable n'est pas joignable
+let MESSAGES_POSITIFS = [
   "Il faut prendre conscience de son état d'entrepreneur",
   "Il faut apprendre à apprendre",
   "Les amateurs s'entraînent quand ils en ont envie, un pro tous les jours",
@@ -2081,7 +2109,64 @@ function lancerTicker(){
   const dist = sp.getBoundingClientRect().width;      // distance parcourue pour un tour complet
   track.style.animationDuration = Math.max(10, dist / TICKER_VITESSE) + 's';
 }
+/* Messages enregistrés dans Airtable (ajout / suppression avec le bouton ✏️) */
+let MSG_RECS = [];   // [{id, texte, ordre}]
+async function chargerMessages(){
+  if(!cfg.token) return;
+  try{
+    const recs = await atList(T_MESSAGES, ['Message','Ordre']);
+    MSG_RECS = recs.map(r=>({id:r.id, texte:String(r.fields.Message||'').trim(), ordre:Number(r.fields.Ordre)||0}))
+                   .filter(m=>m.texte)
+                   .sort((a,b)=>a.ordre-b.ordre || a.id.localeCompare(b.id));
+    if(MSG_RECS.length){ MESSAGES_POSITIFS = MSG_RECS.map(m=>m.texte); lancerTicker(); }
+  }catch(e){ console.warn('Messages positifs :', e.message); }
+}
+function renderMessages(){
+  const ul = document.getElementById('msgList');
+  ul.innerHTML = MSG_RECS.length
+    ? MSG_RECS.map(m=>`<li><span>${esc(m.texte)}</span><button type="button" class="msg-del" data-id="${m.id}" title="Supprimer cette phrase">✕</button></li>`).join('')
+    : '<li class="msg-vide" style="border:none">Aucune phrase pour le moment.</li>';
+  ul.querySelectorAll('.msg-del').forEach(b=>b.onclick = ()=>supprimerMessage(b.dataset.id));
+}
+async function ajouterMessage(){
+  const inp = document.getElementById('msgNew');
+  const texte = inp.value.trim();
+  if(!texte) { inp.focus(); return; }
+  if(!cfg.token){ toast('Configurez d\'abord le jeton Airtable (⚙)'); return; }
+  const btn = document.getElementById('msgAddBtn'); btn.disabled = true;
+  try{
+    const ordre = MSG_RECS.reduce((mx,m)=>Math.max(mx,m.ordre),0) + 1;
+    const r = await atCreate(T_MESSAGES, {Message:texte, Ordre:ordre});
+    MSG_RECS.push({id:r.id, texte, ordre});
+    MESSAGES_POSITIFS = MSG_RECS.map(m=>m.texte);
+    inp.value = ''; renderMessages(); lancerTicker(); toast('Phrase ajoutée');
+    inp.focus();
+  }catch(e){ toast('Erreur : ' + e.message); }
+  btn.disabled = false;
+}
+async function supprimerMessage(id){
+  const m = MSG_RECS.find(x=>x.id===id); if(!m) return;
+  if(!confirm('Supprimer cette phrase ?\n\n« ' + m.texte + ' »')) return;
+  try{
+    await atDelete(T_MESSAGES, id);
+    MSG_RECS = MSG_RECS.filter(x=>x.id!==id);
+    if(MSG_RECS.length) MESSAGES_POSITIFS = MSG_RECS.map(x=>x.texte);
+    renderMessages(); lancerTicker(); toast('Phrase supprimée');
+  }catch(e){ toast('Erreur : ' + e.message); }
+}
+document.getElementById('btnMessages').onclick = async ()=>{
+  document.getElementById('modalMsg').classList.add('show');
+  renderMessages();
+  await chargerMessages(); renderMessages();
+  document.getElementById('msgNew').focus();
+};
+document.getElementById('msgClose').onclick = ()=>document.getElementById('modalMsg').classList.remove('show');
+document.getElementById('modalMsg').addEventListener('click', e=>{ if(e.target.id==='modalMsg') e.currentTarget.classList.remove('show'); });
+document.getElementById('msgAddBtn').onclick = ajouterMessage;
+document.getElementById('msgNew').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); ajouterMessage(); } });
+
 lancerTicker();
+chargerMessages();
 if(document.fonts && document.fonts.ready) document.fonts.ready.then(lancerTicker);
 let tickerResize; window.addEventListener('resize', ()=>{ clearTimeout(tickerResize); tickerResize = setTimeout(lancerTicker, 300); });
 
