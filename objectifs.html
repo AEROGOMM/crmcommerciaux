@@ -1,1 +1,263 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Objectifs - AEROGOMM</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='1' y='1' width='62' height='62' rx='14' fill='%230D1117' stroke='%2330363D' stroke-width='2'/%3E%3Ccircle cx='32' cy='32' r='20' fill='none' stroke='%2358A6FF' stroke-width='6'/%3E%3Ccircle cx='32' cy='32' r='8' fill='%232EC4B6'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Même charte que Mon écran (mon_ecran.html) */
+  :root{
+    --bg:#0D1117;--surface:#161B22;--surface2:#1C2128;--surface3:#21262D;
+    --border:#30363D;--border2:#484F58;--text:#E6EDF3;--muted:#8B949E;--accent:#58A6FF;
+    --leads:#58A6FF;--leads-bg:#0D2240;
+    --chant:#E07B39;--chant-bg:#2D1800;
+    --tiers:#A87DC4;--tiers-bg:#241535;
+    --vente:#2EC4B6;--vente-bg:#0D2A28;
+    --idee:#F5C542;--idee-bg:#2A2208;
+    --projet:#7DD87A;--projet-bg:#10260F;
+    --reseau:#E86FA5;
+    --ok:#3FB27F;--late:#E05252;--late-bg:#2D0C0C;--warn:#D4A017;
+    --radius:8px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;min-height:100dvh;}
 
+  /* ---------- En-tête ---------- */
+  .app-header{position:sticky;top:0;z-index:20;height:60px;background:var(--surface);border-bottom:1px solid var(--border);
+    display:flex;align-items:center;justify-content:space-between;padding:0 20px;gap:12px;}
+  .brand{display:flex;align-items:center;gap:10px;min-width:0;}
+  .brand-logo{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--vente));
+    display:flex;align-items:center;justify-content:center;font-weight:800;color:#000;font-size:15px;flex-shrink:0;}
+  .brand h1{font-size:17px;font-weight:800;letter-spacing:.3px;white-space:nowrap;}
+  .brand .sub{font-size:11px;color:var(--muted);white-space:nowrap;}
+  .header-actions{display:flex;gap:8px;align-items:center;}
+  .btn{border:none;border-radius:6px;padding:8px 12px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;
+    display:inline-flex;align-items:center;gap:6px;text-decoration:none;}
+  .btn:active{transform:scale(.97);}
+  .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted);}
+  .btn-ghost:hover{color:var(--text);border-color:var(--border2);}
+  .btn-taches{background:var(--vente);color:#000;}
+
+  .wrap{max-width:1250px;margin:0 auto;padding:18px 20px 40px;}
+  .snap{font-size:12px;color:var(--muted);margin-bottom:14px;}
+  h2.sec{font-size:15px;font-weight:800;letter-spacing:.4px;margin:26px 0 10px;display:flex;align-items:center;gap:8px;}
+  h2.sec .dot{width:10px;height:10px;border-radius:3px;background:var(--c,var(--accent));}
+
+  /* ---------- Bandeau du chiffre d'affaires ---------- */
+  .ca{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+  .ca .k{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;border-top:3px solid var(--c);}
+  .ca .lbl{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;}
+  .ca .val{font-family:'DM Mono',monospace;font-size:22px;font-weight:500;margin-top:4px;}
+  .ca .hint{font-size:11.5px;color:var(--muted);margin-top:3px;}
+
+  /* ---------- Cartes PRGO / LMPM ---------- */
+  .duo{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;border-left:4px solid var(--c);}
+  .card h3{font-size:16px;font-weight:800;display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+  .card h3 small{font-size:11px;color:var(--muted);font-weight:600;}
+  .big{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0;}
+  .big div{background:var(--surface2);border-radius:6px;padding:10px;text-align:center;}
+  .big b{display:block;font-family:'DM Mono',monospace;font-size:24px;color:var(--c);}
+  .big span{font-size:11px;color:var(--muted);}
+  table.mini{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px;}
+  table.mini td{padding:6px 4px;border-bottom:1px solid var(--surface3);}
+  table.mini td:last-child{text-align:right;font-family:'DM Mono',monospace;}
+  .alert{margin-top:10px;background:var(--late-bg);border:1px solid #5a1d1d;color:#F4A3A3;border-radius:6px;padding:9px 11px;font-size:12.5px;line-height:1.45;}
+  .note{margin-top:10px;background:var(--surface2);border-radius:6px;padding:9px 11px;font-size:12.5px;color:var(--muted);line-height:1.45;}
+
+  /* ---------- Règles d'or ---------- */
+  ol.rules{list-style:none;counter-reset:r;margin-top:12px;}
+  ol.rules li{counter-increment:r;position:relative;padding:8px 8px 8px 38px;font-size:13px;line-height:1.45;border-bottom:1px solid var(--surface3);}
+  ol.rules li::before{content:counter(r);position:absolute;left:4px;top:7px;width:24px;height:24px;border-radius:6px;background:var(--c);color:#000;
+    font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;}
+  ol.rules li em{color:var(--muted);font-style:normal;font-size:12px;display:block;}
+
+  /* ---------- Objectifs datés ---------- */
+  .goals{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+  .goal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:11px 12px;}
+  .goal .d{font-family:'DM Mono',monospace;font-size:12px;color:var(--idee);}
+  .goal .t{font-size:13px;font-weight:700;margin-top:4px;line-height:1.35;}
+  .goal.hot{border-color:var(--late);}
+  .goal.hot .d{color:var(--late);}
+
+  /* ---------- Planning ---------- */
+  .scroll{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);}
+  table.plan{border-collapse:separate;border-spacing:3px;width:100%;min-width:900px;background:var(--surface);font-size:11.5px;}
+  table.plan th{background:var(--surface3);padding:8px 6px;font-size:12px;font-weight:800;border-radius:4px;}
+  table.plan td{padding:7px 6px;border-radius:4px;line-height:1.3;vertical-align:top;}
+  table.plan td.h{font-family:'DM Mono',monospace;color:var(--muted);white-space:nowrap;background:var(--surface2);font-size:11px;}
+  .c-com{background:#12351f;color:#9BE3B5;}
+  .c-ter{background:var(--leads-bg);color:#A9CFFF;}
+  .c-res{background:var(--vente-bg);color:#8FE3DA;}
+  .c-adm{background:var(--chant-bg);color:#F2B48A;}
+  .c-ia{background:var(--tiers-bg);color:#D2B7E6;}
+  .c-pil{background:var(--surface3);color:var(--text);}
+  .c-off{background:#1a1a12;color:#8B8B6E;}
+  .legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;font-size:11px;}
+  .legend span{padding:3px 8px;border-radius:4px;}
+
+  .foot{margin-top:24px;display:flex;gap:10px;flex-wrap:wrap;}
+
+  @media (max-width:1000px){
+    .ca{grid-template-columns:repeat(2,1fr);}
+    .duo{grid-template-columns:1fr;}
+    .goals{grid-template-columns:repeat(2,1fr);}
+  }
+  @media (max-width:700px){
+    .app-header{padding:0 12px;}
+    .brand .sub{display:none;}
+    .btn .txt{display:none;}
+    .wrap{padding:12px 10px 30px;}
+    .ca .val{font-size:18px;}
+    .big b{font-size:17px;white-space:nowrap;}
+    .goals{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand">
+    <div class="brand-logo">🎯</div>
+    <div>
+      <h1>Objectifs</h1>
+      <div class="sub">Décembre 2026 : couvrir les charges de BIO TEAM</div>
+    </div>
+  </div>
+  <div class="header-actions">
+    <a class="btn btn-taches" href="https://aerogomm.github.io/crm-prospection/tous_dossiers.html" title="Tâches du jour">📋 <span class="txt">Tâches du jour</span></a>
+    <a class="btn btn-ghost" href="https://aerogomm.github.io/crmcommerciaux/mon_ecran.html" title="Revenir à Mon écran">← <span class="txt">Mon écran</span></a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="snap">Chiffres tirés du CRM Leads commerciaux le 24/11/2026 (leads créés d'août à octobre). À mettre à jour chaque mois.</div>
+
+  <!-- ===== Le chiffre d'affaires à atteindre ===== -->
+  <h2 class="sec"><span class="dot"></span>Le chiffre d'affaires mensuel à atteindre (HT)</h2>
+  <div class="ca">
+    <div class="k" style="--c:var(--idee)"><div class="lbl">Point mort</div><div class="val">25 000 €</div><div class="hint">Les charges du mois sont couvertes</div></div>
+    <div class="k" style="--c:var(--reseau)"><div class="lbl">Réseau</div><div class="val">8 100 €</div><div class="hint">27 adhérents × 300 €</div></div>
+    <div class="k" style="--c:var(--leads)"><div class="lbl">À signer en PRGO</div><div class="val">17 000 €</div><div class="hint">Rythme actuel : 12 000 à 14 000 €</div></div>
+    <div class="k" style="--c:var(--chant)"><div class="lbl">LMPM</div><div class="val">Bonus</div><div class="hint">Marge de sécurité et remboursement URSSAF</div></div>
+  </div>
+
+  <!-- ===== PRGO et LMPM ===== -->
+  <h2 class="sec"><span class="dot" style="--c:var(--leads)"></span>Ce qu'il faut faire chaque semaine</h2>
+  <div class="duo">
+
+    <div class="card" style="--c:var(--leads)">
+      <h3>PRGO <small>David, Carole</small></h3>
+      <div class="big">
+        <div><b>5</b><span>devis envoyés<br>par semaine</span></div>
+        <div><b>3</b><span>chantiers signés<br>par semaine</span></div>
+        <div><b>4 250 €</b><span>signés<br>par semaine</span></div>
+      </div>
+      <table class="mini">
+        <tr><td>Taux de signature en nombre</td><td>6 devis sur 10</td></tr>
+        <tr><td>Taux de signature en montant</td><td>35 %</td></tr>
+        <tr><td>Montant moyen d'un chantier signé</td><td>1 400 €</td></tr>
+        <tr><td>Montant moyen d'un devis perdu</td><td>3 700 €</td></tr>
+        <tr><td>Devis à envoyer en décembre</td><td>≈ 48 000 €</td></tr>
+        <tr><td>Déjà en attente de réponse (13)</td><td>24 100 €</td></tr>
+        <tr><td>« Imminent » (3)</td><td>6 900 €</td></tr>
+        <tr><td>Visites programmées (3)</td><td>21 000 €</td></tr>
+      </table>
+      <div class="alert">⚠️ On signe les petits chantiers et on perd les gros. Les devis perdus sont passés de 2 en août à 10 en octobre.</div>
+      <h3 style="margin-top:16px;font-size:14px;">Règles d'or PRGO</h3>
+      <ol class="rules">
+        <li><b>5 devis envoyés par semaine, minimum.</b><em>Environ 12 000 € de devis chaque semaine.</em></li>
+        <li><b>Chaque lead reçoit une réponse sous 48 h.</b><em>66 leads sont partis « Sans suite » sans jamais être chiffrés.</em></li>
+        <li><b>Un devis de plus de 3 000 € se présente de vive voix</b> (appel ou rendez-vous), jamais par simple mail.<em>C'est là qu'on perd le plus d'argent.</em></li>
+        <li><b>Chaque devis est relancé à J+3 puis à J+7.</b><em>Ensuite, la fiche passe en « Sans suite » avec la raison du refus.</em></li>
+        <li><b>Tous les devis en attente sont relancés cette semaine.</b><em>13 devis (24 100 €) + 3 « Imminent » (6 900 €).</em></li>
+        <li><b>On note pourquoi un devis est perdu</b> (prix, délai, concurrent).<em>Sans ça, impossible de corriger l'offre.</em></li>
+      </ol>
+    </div>
+
+    <div class="card" style="--c:var(--chant)">
+      <h3>LMPM <small>Jérôme</small></h3>
+      <div class="big">
+        <div><b>2</b><span>devis envoyés<br>par semaine*</span></div>
+        <div><b>0</b><span>chantier signé<br>depuis août</span></div>
+        <div><b>23 700 €</b><span>en attente<br>de réponse</span></div>
+      </div>
+      <table class="mini">
+        <tr><td>Leads reçus d'août à novembre</td><td>28</td></tr>
+        <tr><td>Chantiers signés sur ces leads</td><td>0</td></tr>
+        <tr><td>Devis en attente de réponse (6)</td><td>16 700 €</td></tr>
+        <tr><td>« Imminent » (1)</td><td>7 000 €</td></tr>
+        <tr><td>Montant moyen d'un devis</td><td>≈ 4 000 €</td></tr>
+      </table>
+      <div class="alert">⚠️ Aucun lead LMPM créé depuis août n'a encore abouti à un chantier signé. À regarder en priorité avec Jérôme.</div>
+      <div class="note">* Proposition de départ, faute d'historique récent. L'objectif LMPM est à fixer avec Jérôme lors de la réunion commerciale du lundi.</div>
+      <h3 style="margin-top:16px;font-size:14px;">Règles d'or LMPM</h3>
+      <ol class="rules">
+        <li><b>Relancer cette semaine les 6 devis en attente et l'« Imminent ».</b><em>23 700 € sur la table.</em></li>
+        <li><b>2 devis envoyés par semaine, minimum.</b><em>Environ 8 000 € de devis chaque semaine.</em></li>
+        <li><b>Chaque lead reçoit une réponse sous 48 h.</b></li>
+        <li><b>Point David et Jérôme chaque lundi</b> : devis envoyés, relances, signatures.</li>
+        <li><b>On note pourquoi un devis est perdu.</b></li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- ===== Objectifs datés ===== -->
+  <h2 class="sec"><span class="dot" style="--c:var(--idee)"></span>Les objectifs datés</h2>
+  <div class="goals">
+    <div class="goal hot"><div class="d">26/11</div><div class="t">Plan d'action PRGO de décembre (outils Offre + Canal)</div></div>
+    <div class="goal hot"><div class="d">27/11</div><div class="t">Rendez-vous avec l'avocat et l'expert-comptable</div></div>
+    <div class="goal hot"><div class="d">04/12</div><div class="t">Dossier du redressement judiciaire prêt</div></div>
+    <div class="goal"><div class="d">11/12</div><div class="t">MAILOR prospecte les cibles PRGO</div></div>
+    <div class="goal"><div class="d">31/12</div><div class="t">17 000 € HT signés en PRGO</div></div>
+    <div class="goal"><div class="d">31/12</div><div class="t">Sites decapboats et woodecap en ligne</div></div>
+    <div class="goal"><div class="d">31/03/27</div><div class="t">Offre AERONOVA prête à vendre</div></div>
+    <div class="goal"><div class="d">Chaque semaine</div><div class="t">Pas plus de 60 h de travail</div></div>
+  </div>
+
+  <!-- ===== Planning ===== -->
+  <h2 class="sec"><span class="dot" style="--c:var(--projet)"></span>Ma semaine type</h2>
+  <div class="scroll">
+    <table class="plan">
+      <tr><th>Créneau</th><th>Lundi</th><th>Mardi</th><th>Mercredi</th><th>Jeudi</th><th>Vendredi</th><th>Samedi</th></tr>
+      <tr><td class="h">07:30–08:00</td><td class="c-pil">Mes 3 priorités du jour</td><td class="c-pil">Mes 3 priorités du jour</td><td class="c-pil">Mes 3 priorités du jour</td><td class="c-pil">Mes 3 priorités du jour</td><td class="c-pil">Mes 3 priorités du jour</td><td class="c-off">Repos</td></tr>
+      <tr><td class="h">08:00–10:30</td><td class="c-com"><b>COMMERCIAL PRGO</b><br>appels, relances, devis</td><td class="c-com"><b>COMMERCIAL PRGO</b><br>appels, relances, devis</td><td class="c-com"><b>COMMERCIAL PRGO</b><br>appels, relances, devis</td><td class="c-com"><b>COMMERCIAL PRGO</b><br>appels, relances, devis</td><td class="c-com"><b>COMMERCIAL PRGO</b><br>appels, relances, devis</td><td class="c-pil">Bilan de la semaine + plan de la suivante</td></tr>
+      <tr><td class="h">10:30–11:00</td><td class="c-ter">Point équipes / chantiers</td><td class="c-ter">Point équipes / chantiers</td><td class="c-ter">Point équipes / chantiers</td><td class="c-ter">Point équipes / chantiers</td><td class="c-ter">Point équipes / chantiers</td><td class="c-res">Sites decapboats + woodecap</td></tr>
+      <tr><td class="h">11:00–12:00</td><td class="c-com">Réunion commerciale (point LMPM avec Jérôme)</td><td class="c-res">Réseau : appels aux abonnés</td><td class="c-com">PRGO : prescripteurs (architectes, maîtres d'œuvre)</td><td class="c-res">Réseau + vente matériel</td><td class="c-adm">Administratif : URSSAF, assurances, litiges</td><td class="c-res">Sites decapboats + woodecap</td></tr>
+      <tr><td class="h">12:00–13:00</td><td class="c-off">Déjeuner</td><td class="c-off">Déjeuner</td><td class="c-off">Déjeuner</td><td class="c-off">Déjeuner</td><td class="c-off">Déjeuner</td><td class="c-off">Libre</td></tr>
+      <tr><td class="h">13:00–15:30</td><td class="c-ter">Terrain : chantiers, RDV clients, devis sur place</td><td class="c-ter">Terrain : chantiers, RDV clients, devis sur place</td><td class="c-ter">Terrain : chantiers, RDV clients, devis sur place</td><td class="c-ter">Terrain : chantiers, RDV clients, devis sur place</td><td class="c-adm">Trésorerie + chiffres de la semaine</td><td class="c-off">Libre</td></tr>
+      <tr><td class="h">15:30–17:00</td><td class="c-com"><b>COMMERCIAL n°2</b><br>relances, envoi des devis</td><td class="c-com"><b>COMMERCIAL n°2</b><br>relances, envoi des devis</td><td class="c-com"><b>COMMERCIAL n°2</b><br>relances, envoi des devis</td><td class="c-com"><b>COMMERCIAL n°2</b><br>relances, envoi des devis</td><td class="c-com"><b>COMMERCIAL n°2</b><br>relances, envoi des devis</td><td class="c-off">Libre</td></tr>
+      <tr><td class="h">17:00–18:30</td><td class="c-ia">Outil Offre : bilan des cibles PRGO</td><td class="c-ia">MAILOR au service de PRGO</td><td class="c-res">AERONOVA (dès janvier). En décembre : devis PRGO</td><td class="c-ia">Outil Canal : campagnes PRGO</td><td class="c-pil">Outils : maintenance seulement</td><td class="c-off">Libre</td></tr>
+      <tr><td class="h">18:30–19:00</td><td class="c-pil">Clôture : préparer demain</td><td class="c-pil">Clôture : préparer demain</td><td class="c-pil">Clôture : préparer demain</td><td class="c-pil">Clôture : préparer demain</td><td class="c-pil">Clôture : préparer demain</td><td class="c-off">Libre</td></tr>
+      <tr><td class="h">20:00–21:30</td><td class="c-off">Libre</td><td class="c-ia">Apprentissage IA + 10 pages de lecture</td><td class="c-off">Libre</td><td class="c-ia">Apprentissage IA + 10 pages de lecture</td><td class="c-off">Libre</td><td class="c-off">Libre</td></tr>
+    </table>
+  </div>
+  <div class="legend">
+    <span class="c-com">Commercial</span><span class="c-ter">Équipes et terrain</span><span class="c-res">Réseau et projets</span>
+    <span class="c-adm">Administratif</span><span class="c-ia">IA appliquée</span><span class="c-pil">Pilotage</span><span class="c-off">Pause et repos</span>
+  </div>
+
+  <!-- ===== Règles de la semaine ===== -->
+  <h2 class="sec"><span class="dot" style="--c:var(--reseau)"></span>Mes règles d'or de la semaine</h2>
+  <div class="card" style="--c:var(--reseau)">
+    <ol class="rules">
+      <li><b>Le commercial passe avant tout : aucun outil ouvert avant 10h30.</b><em>Le CA PRGO baisse : c'est l'urgence n°1.</em></li>
+      <li><b>Aucun nouvel outil ni nouveau site jusqu'à fin décembre.</b><em>Finir et vendre avant de construire.</em></li>
+      <li><b>3 projets ouverts au maximum.</b> Une nouvelle idée va dans le bloc « Idées ».<em>Ne plus commencer sans finir.</em></li>
+      <li><b>Chaque séance d'IA appliquée produit un résultat concret pour BIO TEAM.</b><em>La formation devient du chiffre d'affaires.</em></li>
+      <li><b>Fin de journée à 19h</b>, sauf les soirées de formation.<em>On décide mieux en étant reposé.</em></li>
+      <li><b>Samedi après-midi et 3 soirées par semaine libres.</b><em>Tenir dans la durée.</em></li>
+      <li><b>Le vendredi, je remplis le Suivi hebdo.</b><em>Ce qui se mesure s'améliore.</em></li>
+    </ol>
+  </div>
+
+  <div class="foot">
+    <a class="btn btn-taches" href="https://claude.ai/artifact/3GSuRY9ZqbNbcnqVJbReg3" target="_blank" rel="noopener">📊 Ouvrir le planning détaillé et le Suivi hebdo</a>
+    <a class="btn btn-ghost" href="https://aerogomm.github.io/crmcommerciaux/mon_ecran.html">← Revenir à Mon écran</a>
+  </div>
+</div>
+
+</body>
+</html>
