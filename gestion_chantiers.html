@@ -890,11 +890,58 @@ async function fetchChantiers(){
     populateCommercialFilter();
     render();
     maybeOpenFromUrl();
+    autoPasserEnCours();
   }catch(err){
     console.error(err);
     toast("Erreur de connexion Airtable — voir Paramètres");
   }finally{
     veil(false);
+  }
+}
+/* =========================================================
+   PASSAGE AUTOMATIQUE « Chantier programmé » → « En cours »
+   À chaque chargement : toute fiche « Chantier programmé » dont la
+   date de début d'intervention est aujourd'hui ou passée bascule en
+   « En cours » (et le lead d'origine passe en « Chantier en cours »).
+   Les fiches sans date de début ne bougent pas.
+   ========================================================= */
+let autoEnCoursRunning = false;
+async function autoPasserEnCours(){
+  if(autoEnCoursRunning || !airtableReady()) return;
+  const d = new Date();
+  const aujourdhui = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  const aBasculer = chantiers.filter(c=>
+    c[FIELD.statut] === "Chantier programmé" &&
+    c[FIELD.dateDebut] && String(c[FIELD.dateDebut]).slice(0,10) <= aujourdhui
+  );
+  if(!aBasculer.length) return;
+  autoEnCoursRunning = true;
+  let nb = 0;
+  try{
+    for(const c of aBasculer){
+      try{
+        const url = `https://api.airtable.com/v0/${cfg.base}/${encodeURIComponent(cfg.table)}/${c.id}`;
+        const res = await fetch(url, {
+          method:"PATCH",
+          headers:{ Authorization:`Bearer ${cfg.pat}`, "Content-Type":"application/json" },
+          body: JSON.stringify({ fields: { [FIELD.statut]: "En cours" }, typecast:true })
+        });
+        if(!res.ok) throw new Error(await res.text());
+        const updated = await res.json();
+        const idx = chantiers.findIndex(x=>x.id===c.id);
+        if(idx>-1) chantiers[idx] = { id:c.id, ...updated.fields };
+        nb++;
+        await syncLeadStatut(c[FIELD.leadId], "Chantier en cours");
+      }catch(err){
+        console.error("Passage auto En cours échoué pour", c.id, err);
+      }
+    }
+  }finally{
+    autoEnCoursRunning = false;
+  }
+  if(nb){
+    render();
+    setTimeout(()=> toast(`🏗 ${nb} chantier${nb>1?"s":""} passé${nb>1?"s":""} automatiquement en « En cours » (date de début atteinte)`), 3000);
   }
 }
 /* =========================================================
