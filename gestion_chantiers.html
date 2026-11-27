@@ -576,7 +576,7 @@
         <code>CommissionAcompteVersee</code> (case à cocher), <code>CommissionSolde</code> (nombre),
         <code>CommissionSoldeVersee</code> (case à cocher),
         <code>ProchaineRelance</code> (date), <code>CreneauRelance</code> (sélection unique : <code>Tôt le matin</code>, <code>Début de matinée</code>,
-        <code>Fin de matinée</code>, <code>Début d'après-midi</code>, <code>Fin d'après-midi</code>, <code>Début de soirée</code>),
+        <code>Fin de matinée</code>, <code>Début d'après-midi</code>, <code>Milieu d'après-midi</code>, <code>Fin d'après-midi</code>, <code>Début de soirée</code>),
         <code>SansAcompte</code> (case à cocher), <code>AutoliquidationTVA</code> (case à cocher),
         <code>Notes</code> (texte long).<br><br>
         Les pièces jointes sont stockées sur la fiche du <strong>lead</strong> dans la Table Leads (champ <code>PiecesJointes</code>, type <strong>Pièce jointe</strong>) — pas sur la fiche chantier elle-même.
@@ -613,6 +613,7 @@ const CRENEAUX = [
   { key:"Début de matinée",     heure:"09:00", icon:"🌅" },
   { key:"Fin de matinée",       heure:"11:00", icon:"🌤️" },
   { key:"Début d'après-midi",   heure:"14:00", icon:"☀️" },
+  { key:"Milieu d'après-midi",  heure:"15:15", icon:"🕒" },
   { key:"Fin d'après-midi",     heure:"16:30", icon:"🌇" },
   { key:"Début de soirée",      heure:"18:30", icon:"🌆" },
 ];

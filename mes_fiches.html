@@ -99,8 +99,8 @@ select.sm{width:auto;padding:5px 6px;font-size:14px}
 <script>
 /* ========= Réglages & état ========= */
 const T={D:'Dossiers',F:'Fiches',E:'Etapes',J:'Journal'};
-const CRENEAUX=["Tôt le matin","Début de matinée","Fin de matinée","Début d'après-midi","Fin d'après-midi","Début de soirée"];
-const CR_ICON={"Tôt le matin":"🌄","Début de matinée":"🌅","Fin de matinée":"🌤️","Début d'après-midi":"☀️","Fin d'après-midi":"🌇","Début de soirée":"🌙"};
+const CRENEAUX=["Tôt le matin","Début de matinée","Fin de matinée","Début d'après-midi","Milieu d'après-midi","Fin d'après-midi","Début de soirée"];
+const CR_ICON={"Tôt le matin":"🌄","Début de matinée":"🌅","Fin de matinée":"🌤️","Début d'après-midi":"☀️","Milieu d'après-midi":"🕒","Fin d'après-midi":"🌇","Début de soirée":"🌙"};
 const crIdx=c=>{const i=CRENEAUX.indexOf(c||'');return i<0?99:i};
 const crSpoken=c=>c==='Tôt le matin'?'tôt le matin':'en '+c.toLowerCase();
 function crOptions(sel,ph){return`<option value="">${ph}</option>`+CRENEAUX.map(c=>`<option value="${esc(c)}" ${c===sel?'selected':''}>${CR_ICON[c]} ${esc(c)}</option>`).join('')}
